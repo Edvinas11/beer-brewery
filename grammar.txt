@@ -1,0 +1,25 @@
+<beer> ::= <name> <type> <alcohol-content> <ingredients>
+
+<name> ::= "Pale Ale" | "Guinness" | <custom-name>
+
+<type> ::= "Lager" | "Ale" | "Stout"
+
+<alcohol-content> ::= <percentage>
+
+<ingredients> ::= <ingredient> | <ingredient> <ingredients>
+
+<ingredient> ::= "Malt" | "Hops" | "Yeast" | "Water" | <custom-ingredient>
+
+<recipe> ::= <beer-type> <ingredients> <process>
+
+<process> ::= "Mash" <time> "Boil" <time> "Ferment" <time> "Condition" <time>
+
+<equipment> ::= "Mash Tun" | "Kettle" | "Fermenter" | "Conditioning Tank"
+
+<brew-command> ::= "brewBeer" <recipe>
+
+<add-ingredient-command> ::= "addIngredient" <ingredient> <recipe>
+
+<ferment-command> ::= "ferment" <beer> <time-period>
+
+<condition-command> ::= "condition" <beer> <time-period>

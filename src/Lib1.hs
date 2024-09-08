@@ -7,9 +7,45 @@ module Lib1
 completions :: [String]
 completions = [
     -- Entities
-    "Beer",
-    "Ingredient",
-    "Recipe",
-    "Equipment",
-    "TimePeriod"
+    "beer",
+    "name",
+    "type",
+    "alcohol-content",
+    "ingredients",
+    "ingredient",
+    "recipe",
+    "process",
+    "equipment",
+
+    -- Types of Beer
+    "Pale Ale",
+    "Stout",
+    "IPA",
+    "Lager",
+    "Ale",
+    "Pilsner",
+
+    -- Ingredients
+    "Malt",
+    "Hops",
+    "Yeast",
+    "Water",
+
+    -- Processes
+    "Mash",
+    "Boil",
+    "Ferment",
+    "Condition",
+
+    -- Equipment
+    "Mash Tun",
+    "Kettle",
+    "Fermenter",
+    "Conditioning Tank",
+
+    -- Commands
+    "brewBeer",
+    "addIngredient",
+    "ferment",
+    "condition"
     ]

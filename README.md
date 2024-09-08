@@ -40,3 +40,9 @@ This project models a beer brewery, focusing on the process of brewing various t
 - **mash**: Converts malt starches into fermentable sugars in the brewing process.
 - **store**: Stores the beer for aging or distribution after fermentation and conditioning.
 - **filter**: Filters the beer to remove any unwanted particles, improving clarity and texture.
+
+## Examples of Common Commands
+1. **brewBeer GuinnessRecipe**
+    - Brew a Guinness using the provided recipe.
+2. **addIngredient Hops PaleAleRecipe**
+    - Add hops to the Pale Ale recipe
