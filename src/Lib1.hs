@@ -16,6 +16,7 @@ completions = [
     "ingredient",
     "recipe",
     "process",
+    "number",
 
     -- Types of Beer
     "Ale",
