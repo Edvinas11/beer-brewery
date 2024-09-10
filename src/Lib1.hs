@@ -11,19 +11,16 @@ completions = [
     "name",
     "type",
     "alcohol-content",
+    "percentage",
     "ingredients",
     "ingredient",
     "recipe",
     "process",
-    "equipment",
 
     -- Types of Beer
-    "Pale Ale",
-    "Stout",
-    "IPA",
-    "Lager",
     "Ale",
-    "Pilsner",
+    "Stout",
+    "Lager",
 
     -- Ingredients
     "Malt",
@@ -37,11 +34,8 @@ completions = [
     "Ferment",
     "Condition",
 
-    -- Equipment
-    "Mash Tun",
-    "Kettle",
-    "Fermenter",
-    "Conditioning Tank",
+    "time",
+    "time-period",
 
     -- Commands
     "brewBeer",
