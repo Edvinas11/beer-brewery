@@ -66,9 +66,7 @@ brewBeer Lager Malt Hops Yeast Mash 30 minutes Boil 1 hour Ferment 2 weeks Condi
 
 10. ```<time>```: Specifies the duration for each brewing process step.
 
-11. ```<time-period>```: Describes the time required for fermenting or conditioning a beer.
-
-12. ```<number>```: Integer number.
+11. ```<number>```: Integer number.
 
 ## Operations
 
