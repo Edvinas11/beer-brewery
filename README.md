@@ -40,7 +40,7 @@ BNF representation
 <ingredients> ::= "Yeast"
 ```
 ```plain text
-brewBeer Lager Malt Hops Yeast Mash 30 minutes Boil 1 hour Ferment 2 weeks Condition 1 month
+brewBeer (Lager (Malt Hops Yeast) (Mash 30 minutes Boil 1 hour Ferment 2 weeks Condition 1 month))
 ```
 
 ## Symbol Definitions
@@ -72,16 +72,16 @@ brewBeer Lager Malt Hops Yeast Mash 30 minutes Boil 1 hour Ferment 2 weeks Condi
 
 1. ```brewBeer```: This operation initiates the brewing process for a beer based on a specified recipe.
     - **Syntax**: ```brewBeer <recipe>```
-    - **Example**: ```brewBeer Ale Malt Hops Yeast Mash 30 minutes Boil 1 hour Ferment 2 weeks Condition 1 month```
+    - **Example**: ```brewBeer (Ale (Malt Hops Yeast) (Mash 30 minutes Boil 1 hour Ferment 2 weeks Condition 1 month))```
 
 2. ```addIngredient```: This operation adds an ingredient to a given recipe.
     - **Syntax**: ```addIngredient <ingredient> <recipe>```
-    - **Example**: ```addIngredient Hops Stout Malt Hops Yeast Mash 1 hour Boil 1 hour Ferment 2 weeks Condition 1 month```
+    - **Example**: ```addIngredient (Hops (Stout (Malt Hops Yeast) (Mash 1 hour Boil 1 hour Ferment 2 weeks Condition 1 month)))```
 
 3. ```ferment```: This operation ferments the beer for a specified time period.
     - **Syntax**: ```ferment <beer> <time-period>```
-    - **Example**: ```ferment Pale Ale Lager 5% Malt Hops Yeast Water Mash 30 minutes Boil 1 hour Ferment 2 weeks Condition 1 month 2 weeks```
+    - **Example**: ```ferment (Pale Ale Lager 5% (Malt Hops Yeast Water) (Mash 30 minutes Boil 1 hour Ferment 2 weeks Condition 1 month) 2 weeks)```
 
 4. ```condition```: Conditions a specified beer for a given time period, allowing it to mature.
     - **Syntax**: condition ```<beer> <time-period>```
-    - **Example**: ```condition Guinness Stout 6% Malt Hops Yeast Water Mash 1 hour Boil 1 hour Ferment 2 weeks Condition 1 month 1 month```
+    - **Example**: ```condition (Guinness Stout 6% (Malt Hops Yeast Water) (Mash 1 hour Boil 1 hour Ferment 2 weeks Condition 1 month) 1 month)```
