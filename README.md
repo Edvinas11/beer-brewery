@@ -35,17 +35,15 @@ This project models a beer brewery, focusing on the process of brewing various t
 Let's create a Lager with Malt, Hops, and Yeast as ingredients
 ```plain text
 BNF representation
-<ingredients> ::= "Malt" <ingredients>
-<ingredients> ::= "Hops" <ingredients>
-<ingredients> ::= "Yeast"
+<ingredients> ::= "(" "Malt" <ingredients> ")" | "(" "Hops" <ingredients> ")" | "(" "Yeast" ")"
 ```
 ```plain text
-brewBeer (Lager (Malt Hops Yeast) (Mash 30 minutes Boil 1 hour Ferment 2 weeks Condition 1 month))
+brewBeer (Lager (Malt Hops Yeast) (Mash "30 minutes" Boil "1 hour" Ferment "2 weeks" Condition "1 month"))
 ```
 
 ## Symbol Definitions
 1. ```<beer>```: Represents a beer object.
-    - **Example**: ```Guinness Stout 6% Malt Hops Yeast Water```
+    - **Example**: ```(Guinness Stout 6% (Malt Hops Yeast Water))```
 
 2. ```<name>```: Specifies the name of the beer.
 
@@ -60,7 +58,7 @@ brewBeer (Lager (Malt Hops Yeast) (Mash 30 minutes Boil 1 hour Ferment 2 weeks C
 7.  ```<ingredient>```: A single ingredient used in the brewing process.
 
 8. ```<recipe>```: Describes the entire brewing process for a beer, including the type of beer, the ingredients, and the process steps (mashing, boiling, fermenting, conditioning).
-    - **Example**: ```Ale Malt Hops Yeast Mash 30 minutes Boil 1 hour Ferment 2 weeks Condition 1 month```
+    - **Example**: ```(Ale (Malt Hops Yeast) (Mash "30 minutes" Boil "1 hour" Ferment "2 weeks" Condition "1 month"))```
 
 9. ```<process>```: Outlines the steps in the brewing process.
 
@@ -72,16 +70,16 @@ brewBeer (Lager (Malt Hops Yeast) (Mash 30 minutes Boil 1 hour Ferment 2 weeks C
 
 1. ```brewBeer```: This operation initiates the brewing process for a beer based on a specified recipe.
     - **Syntax**: ```brewBeer <recipe>```
-    - **Example**: ```brewBeer (Ale (Malt Hops Yeast) (Mash 30 minutes Boil 1 hour Ferment 2 weeks Condition 1 month))```
+    - **Example**: ```brewBeer (Ale (Malt Hops Yeast) (Mash "30 minutes" Boil "1 hour" Ferment "2 weeks" Condition "1 month"))```
 
 2. ```addIngredient```: This operation adds an ingredient to a given recipe.
     - **Syntax**: ```addIngredient <ingredient> <recipe>```
-    - **Example**: ```addIngredient (Hops (Stout (Malt Hops Yeast) (Mash 1 hour Boil 1 hour Ferment 2 weeks Condition 1 month)))```
+    - **Example**: ```addIngredient ("Hops") (Stout (Malt Hops Yeast) (Mash 1 hour Boil 1 hour Ferment 2 weeks Condition 1 month))```
 
 3. ```ferment```: This operation ferments the beer for a specified time period.
     - **Syntax**: ```ferment <beer> <time-period>```
-    - **Example**: ```ferment (Pale Ale Lager 5% (Malt Hops Yeast Water) (Mash 30 minutes Boil 1 hour Ferment 2 weeks Condition 1 month) 2 weeks)```
+    - **Example**: ```ferment (Pale Ale (Lager 5% (Malt Hops Yeast Water) (Mash 30 minutes Boil 1 hour Ferment 2 weeks Condition 1 month)) 2 weeks)```
 
 4. ```condition```: Conditions a specified beer for a given time period, allowing it to mature.
     - **Syntax**: condition ```<beer> <time-period>```
-    - **Example**: ```condition (Guinness Stout 6% (Malt Hops Yeast Water) (Mash 1 hour Boil 1 hour Ferment 2 weeks Condition 1 month) 1 month)```
+    - **Example**: ```condition (Guinness (Stout 6% (Malt Hops Yeast Water) (Mash 1 hour Boil 1 hour Ferment 2 weeks Condition 1 month)) 1 month)```
