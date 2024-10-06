@@ -36,11 +36,11 @@ completions = [
     "Condition",
 
     "time",
-    "time-period",
 
     -- Commands
     "brewBeer",
     "addIngredient",
     "ferment",
-    "condition"
+    "condition",
+    "testCommand"
     ]

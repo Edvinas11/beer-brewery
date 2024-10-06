@@ -1,0 +1,13 @@
+let j
+testCommand 
+testCommand 
+testCommand
+testCommand 
+testCommand 
+testCommand 
+testCommand
+brewBeer (Lager (Malt Hops Yeast Water) (Mash 1 hour Boil 1 hour Ferment 2 weeks Condition 1 month))
+brewBeer (Lager (Malt Hops Yeast Water) (Mash 1 hour Boil 1 hour Ferment 2 weeks Condition 1 month))
+brewBeer 
+brewBeer
+brewBeer (Lager (Malt Hops Yeast Water) (Mash 1 hour Boil 1 hour Ferment 2 weeks Condition 1 month))
