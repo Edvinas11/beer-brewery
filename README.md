@@ -51,20 +51,20 @@ brewBeer (Lager (Malt Hops Yeast) (Mash "30 minutes" Boil "1 hour" Ferment "2 we
 
 4. ```<alcohol-content>```: Describes the percentage of alcohol in the beer.
 
-5. ```<percentage>```: Specifies the alcohol percentage in the beer.
+5. ```<ingredients>```: A list of ingredients used in the beer, defined recursively. It can either be a single ```<ingredient>``` or multiple ```<ingredient>``` elements.
 
-6. ```<ingredients>```: A list of ingredients used in the beer, defined recursively. It can either be a single ```<ingredient>``` or multiple ```<ingredient>``` elements.
+6.  ```<ingredient>```: A single ingredient used in the brewing process.
 
-7.  ```<ingredient>```: A single ingredient used in the brewing process.
-
-8. ```<recipe>```: Describes the entire brewing process for a beer, including the type of beer, the ingredients, and the process steps (mashing, boiling, fermenting, conditioning).
+7. ```<recipe>```: Describes the entire brewing process for a beer, including the type of beer, the ingredients, and the process steps (mashing, boiling, fermenting, conditioning).
     - **Example**: ```(Ale (Malt Hops Yeast) (Mash "30 minutes" Boil "1 hour" Ferment "2 weeks" Condition "1 month"))```
 
-9. ```<process>```: Outlines the steps in the brewing process.
+8. ```<process>```: Outlines the steps in the brewing process.
 
-10. ```<time>```: Specifies the duration for each brewing process step.
+9. ```<time>```: Specifies the duration for each brewing process step.
 
-11. ```<number>```: Integer number.
+10. ```<number>```: Integer number.
+
+11. ```<period>```: Time period.
 
 ## Operations
 
@@ -78,7 +78,7 @@ brewBeer (Lager (Malt Hops Yeast) (Mash "30 minutes" Boil "1 hour" Ferment "2 we
 
 3. ```ferment```: This operation ferments the beer for a specified time period.
     - **Syntax**: ```ferment <beer> <time-period>```
-    - **Example**: ```ferment (Pale Ale (Lager 5% (Malt Hops Yeast Water) (Mash 30 minutes Boil 1 hour Ferment 2 weeks Condition 1 month)) 2 weeks)```
+    - **Example**: ```ferment (PaleAle (Lager 5% (Malt Hops Yeast Water) (Mash 30 minutes Boil 1 hour Ferment 2 weeks Condition 1 month)) 2 weeks)```
 
 4. ```condition```: Conditions a specified beer for a given time period, allowing it to mature.
     - **Syntax**: condition ```<beer> <time-period>```

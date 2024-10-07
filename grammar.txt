@@ -1,12 +1,10 @@
 <beer> ::= "(" <name> <type> <alcohol_content> <ingredients> ")"
 
-<name> ::= "Pale Ale" | "Guinness"
+<name> ::= "PaleAle" | "Guinness"
 
 <type> ::= "Lager" | "Ale" | "Stout"
 
-<alcohol_content> ::= <percentage>
-
-<percentage> ::= <number> "%"
+<alcohol_content> ::= <number> "%"
 
 <number> ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
  
@@ -18,7 +16,9 @@
 
 <process> ::= "(" "Mash" <time> "Boil" <time> "Ferment" <time> "Condition" <time> ")"
 
-<time> ::= "30 minutes" | "1 hour" | "2 weeks" | "1 month" | "6 months"
+<period> ::= "minutes" | "hour" | "weeks" | "month" | "months"
+
+<time> ::= <number> <period>
 
 <brew_command> ::= "brewBeer" <recipe>
 
