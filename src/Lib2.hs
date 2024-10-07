@@ -14,7 +14,7 @@ import Debug.Trace (trace)
 skipWhitespace :: String -> String
 skipWhitespace = dropWhile (`elem` " \t\n")
 
--- Data Types based on your BNF
+-- Data Types
 
 -- Represents a beer with a name, type, alcohol content, and ingredients
 data Beer = Beer String String String [String]
