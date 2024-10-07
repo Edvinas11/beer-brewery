@@ -14,7 +14,9 @@ module Lib2
     parseBeerType,
     parseNumber,
     parseAlcoholContent,
-    parseBeer
+    parseBeer,
+    parseIngredients,
+    parseIngredientsList
     ) where
 
 -- | An entity which represets user input.
@@ -28,8 +30,8 @@ data Ingredient = Malt | Hops | Yeast | Water
 data Beer = Beer 
   { beerName :: BeerName,
     beerType :: BeerType,
-    alcoholContent :: AlcoholContent
-    -- ingredients :: [Ingredient]
+    alcoholContent :: AlcoholContent,
+    ingredients :: [Ingredient]
   } 
   deriving (Show, Eq)
 
@@ -92,14 +94,35 @@ parseAlcoholContent input =
 -- <beer> ::= "(" <name> <type> <alcohol_content> <ingredients> ")"
 parseBeer :: String -> Either String Beer
 parseBeer input = case words input of
-  (beerNameStr : beerTypeStr : alcoholContentStr : _) -> case parseBeerName beerNameStr of
-    Right beerName -> case parseBeerType beerTypeStr of
-      Right beerType -> case parseAlcoholContent alcoholContentStr of
-        Right alcoholContent -> Right $ Beer beerName beerType alcoholContent
+  (beerNameStr : beerTypeStr : alcoholContentStr : ingredientStr) ->
+    case parseBeerName beerNameStr of
+      Right beerName -> case parseBeerType beerTypeStr of
+        Right beerType -> case parseAlcoholContent alcoholContentStr of
+          Right alcoholContent -> 
+            let ingredientsStr = unwords ingredientStr 
+            in case parseIngredients ingredientsStr of
+              Right ingredients -> Right $ Beer beerName beerType alcoholContent ingredients
+              Left e -> Left e
+          Left e -> Left e
         Left e -> Left e
       Left e -> Left e
-    Left e -> Left e
   _ -> Left "Invalid beer format"
+
+-- <ingredients> ::= "(" <ingredient> | <ingredient> <ingredients> ")"
+parseIngredients :: String -> Either String [Ingredient]
+parseIngredients input = 
+  if head input == '(' && last input == ')'
+  then let ingredientWords = words (init (tail input)) -- Remove the parentheses and split words
+       in parseIngredientsList ingredientWords
+  else Left "Ingredients must be enclosed in parentheses"
+
+parseIngredientsList :: [String] -> Either String [Ingredient]
+parseIngredientsList [] = Right []
+parseIngredientsList (x:xs) = case parseIngredient x of
+  Right ingredient -> case parseIngredientsList xs of
+    Right ingredients -> Right (ingredient : ingredients)
+    Left e -> Left e
+  Left e -> Left e
 
 -- | Parses user's input.
 -- The function must have tests.
