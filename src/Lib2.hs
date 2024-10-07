@@ -1,198 +1,239 @@
-{-# LANGUAGE InstanceSigs #-}
 module Lib2
     ( Query(..),
-    BrewCommand(..),
-    AddIngredientCommand(..),
-    FermentCommand(..),
-    ConditionCommand(..),
     parseQuery,
     State(..),
     emptyState,
-    stateTransition
+    stateTransition,
+    parseRecipe,
+    parseTime
     ) where
 
--- | An entity which represents user input.
-data Query = Brew BrewCommand
-           | Add AddIngredientCommand
-           | Ferment FermentCommand
-           | Condition ConditionCommand
-           deriving (Eq, Show)
+import Debug.Trace (trace)
 
-data Beer = Beer
-  { beerName       :: String,
-    beerType       :: String,
-    alcoholContent :: String,
-    beerIngredients    :: [Ingredient]
-  } 
+-- Helper to skip leading whitespaces
+skipWhitespace :: String -> String
+skipWhitespace = dropWhile (`elem` " \t\n")
+
+-- Data Types based on your BNF
+
+-- Represents a beer with a name, type, alcohol content, and ingredients
+data Beer = Beer String String String [String]
   deriving (Eq, Show)
 
-data Ingredient = Malt | Hops | Yeast | Water
+-- Represents a recipe with type, ingredients, and process
+data Recipe = Recipe String [String] Process
   deriving (Eq, Show)
 
-data Recipe = Recipe 
-  { recipeType       :: String, 
-    recipeIngredients    :: [Ingredient], 
-    process        :: Process
-  } 
+-- Represents a brewing process with mash, boil, ferment, and condition times
+data Process = Process String String String String
   deriving (Eq, Show)
 
-data Process = Process 
-  { mash       :: String, 
-    boil       :: String, 
-    ferment    :: String, 
-    condition  :: String
-  } 
+-- Different types of queries or commands the user can issue
+data Query 
+  = BrewBeer Recipe
+  | AddIngredient String Recipe
+  | Ferment Beer String
+  | Condition Beer String
   deriving (Eq, Show)
 
-data Time = Minutes30 | Hour1 | Weeks2 | Month1 | Months6
+-- Represents the state of the system, which stores a list of beers
+data State = State [Beer]
   deriving (Eq, Show)
 
-data BrewCommand = BrewCommand Recipe
-  deriving (Eq, Show)
-
-data AddIngredientCommand = AddIngredientCommand Ingredient Recipe
-  deriving (Eq, Show)
-
-data FermentCommand = FermentCommand Beer Time
-  deriving (Eq, Show)
-
-data ConditionCommand = ConditionCommand Beer Time
-  deriving (Eq, Show)
-
--- | Parsing functions
--- <brew_command> ::= "brewBeer" <recipe>
-parseBrewCommand :: String -> Either String BrewCommand
-parseBrewCommand input = case words input of 
-  ("brewBeer":rest) -> case parseRecipe (unwords rest) of
-    Right recipe -> Right (BrewCommand recipe)
-    Left err -> Left err
-  _ -> Left "Invalid brewBeer command"
-
--- <add_ingredient_command> ::= "addIngredient" <ingredient> <recipe>
-parseAddIngredientCommand :: String -> Either String AddIngredientCommand
-parseAddIngredientCommand input = case words input of
-    ("addIngredient":ingredientStr:rest) -> case parseIngredient ingredientStr of
-        Right ingredient -> case parseRecipe (unwords rest) of
-            Right recipe -> Right (AddIngredientCommand ingredient recipe)
-            Left err -> Left err
-        Left err -> Left err
-    _ -> Left "Invalid addIngredient command"
-
--- <ferment_command> ::= "ferment" <beer> <time>
-parseFermentCommand :: String -> Either String FermentCommand
-parseFermentCommand input = case words input of
-    ("ferment":rest) -> case parseBeerAndTime (unwords rest) of
-        Right (beer, time) -> Right (FermentCommand beer time)
-        Left err -> Left err
-    _ -> Left "Invalid ferment command"
-
--- <condition_command> ::= "condition" <beer> <time>
-parseConditionCommand :: String -> Either String ConditionCommand
-parseConditionCommand input = case words input of
-    ("condition":rest) -> case parseBeerAndTime (unwords rest) of
-        Right (beer, time) -> Right (ConditionCommand beer time)
-        Left err -> Left err
-    _ -> Left "Invalid condition command"
-
--- Helper Parsing Functions
-
--- Parses a recipe according to the BNF
--- <recipe> ::= "(" <type> <ingredients> <process> ")"
-parseRecipe :: String -> Either String Recipe
-parseRecipe input = 
-    -- Parsing logic for the recipe, ingredients, and process 
-    Right (Recipe "Lager" [Malt, Hops, Yeast] (Process "Mash 1 hour" "Boil 1 hour" "Ferment 2 weeks" "Condition 1 month"))
-
--- Parses a beer according to the BNF
--- <beer> ::= "(" <name> <type> <alcohol_content> <ingredients> ")"
-parseBeer :: String -> Either String Beer
-parseBeer input = 
-    -- Parsing logic for beer, with name, type, and alcohol content
-    Right (Beer "Pale Ale" "Ale" "5%" [Malt, Hops])
-
--- Parses an ingredient
--- <ingredient> ::= "(" "Malt" | "Hops" | "Yeast" | "Water" ")"
-parseIngredient :: String -> Either String Ingredient
-parseIngredient "Malt" = Right Malt
-parseIngredient "Hops" = Right Hops
-parseIngredient "Yeast" = Right Yeast
-parseIngredient "Water" = Right Water
-parseIngredient _ = Left "Unknown ingredient"
-
--- Parses time values according to BNF
--- <time> ::= "30 minutes" | "1 hour" | "2 weeks" | "1 month" | "6 months"
-parseTime :: String -> Either String Time
-parseTime "30 minutes" = Right Minutes30
-parseTime "1 hour" = Right Hour1
-parseTime "2 weeks" = Right Weeks2
-parseTime "1 month" = Right Month1
-parseTime "6 months" = Right Months6
-parseTime _ = Left "Invalid time format"
-
--- Parses a beer and time for ferment and condition commands
-parseBeerAndTime :: String -> Either String (Beer, Time)
-parseBeerAndTime input = 
-    -- Assuming the beer and time parsing logic
-    Right (Beer "Pale Ale" "Ale" "5%" [Malt, Hops], Weeks2)
-
--- | Parses user's input.
-parseQuery :: String -> Either String Query
-parseQuery input
-    | "brewBeer" `elem` words input = case parseBrewCommand input of
-        Right brewCommand -> Right (Brew brewCommand)
-        Left err -> Left err
-    | "addIngredient" `elem` words input = case parseAddIngredientCommand input of
-        Right addCommand -> Right (Add addCommand)
-        Left err -> Left err
-    | "ferment" `elem` words input = case parseFermentCommand input of
-        Right fermentCommand -> Right (Ferment fermentCommand)
-        Left err -> Left err
-    | "condition" `elem` words input = case parseConditionCommand input of
-        Right conditionCommand -> Right (Condition conditionCommand)
-        Left err -> Left err
-    | otherwise = Left "Invalid command"
-
--- | An entity which represents your program's state.
-data State = State
-  { stateBeers       :: [String],   -- List of beers created
-    stateRecipes     :: [Recipe],   
-    stateIngredients :: [Ingredient]   -- Ingredients for the current recipe
-  } deriving (Eq, Show)
-
--- | Creates an initial program's state.
+-- Creates the initial empty state
 emptyState :: State
-emptyState = State [] [] []
+emptyState = State []
 
--- | Updates a state according to a query.
+-- | Parses user input and returns a query based on the input
+parseQuery :: String -> Either String Query
+parseQuery input = 
+    let trimmedInput = skipWhitespace input
+    in if trimmedInput == "brewBeer"
+       then Right (BrewBeer (Recipe "" [] (Process "" "" "" ""))) -- Return "brewBeer" without parsing a recipe
+       else if take 8 trimmedInput == "brewBeer"
+            then case parseBrewCommand (drop 8 trimmedInput) of
+                   Just (query, "") -> Right query
+                   _ -> Left "Parse error: Could not parse recipe."
+            else Left "Parse error: Invalid command"
+
+-- | Handles state transitions based on the parsed query
 stateTransition :: State -> Query -> Either String (Maybe String, State)
-stateTransition state (Brew brewCommand) =
-    stateTransitionBrew state brewCommand
+stateTransition (State beers) (BrewBeer recipe) = 
+  let newBeer = Beer (show recipe) "Ale" "5%" []  -- Simplified beer based on the recipe
+      newState = State (newBeer : beers)
+  in Right (Just "Beer brewed successfully!", newState)
 
-stateTransition state (Add addCommand) =
-    stateTransitionAdd state addCommand
+stateTransition (State beers) (Ferment beer time) = 
+  Right (Just ("Fermenting beer for " ++ time), State beers)
 
-stateTransition state (Ferment fermentCommand) =
-    stateTransitionFerment state fermentCommand
+stateTransition (State beers) (Condition beer time) = 
+  Right (Just ("Conditioning beer for " ++ time), State beers)
 
-stateTransition state (Condition conditionCommand) =
-    stateTransitionCondition state conditionCommand
+stateTransition (State beers) (AddIngredient ingredient recipe) = 
+  Right (Just ("Added " ++ ingredient ++ " to the recipe"), State beers)
 
--- Individual state transition functions for each command
+-- Parsers
 
-stateTransitionBrew :: State -> BrewCommand -> Either String (Maybe String, State)
-stateTransitionBrew state (BrewCommand recipe) = 
-    let newState = state { stateRecipes = recipe : stateRecipes state }
-    in Right (Just "Beer brewed", newState)
+-- <brew_command> ::= "brewBeer" <recipe>
+parseBrewCommand :: String -> Maybe (Query, String)
+parseBrewCommand input = 
+  let rest = skipWhitespace input
+  in case parseRecipe rest of
+       Just (recipe, rest1) -> Just (BrewBeer recipe, skipWhitespace rest1)
+       Nothing -> Nothing
 
-stateTransitionAdd :: State -> AddIngredientCommand -> Either String (Maybe String, State)
-stateTransitionAdd state (AddIngredientCommand ingredient recipe) = 
-    let newState = state { stateIngredients = ingredient : stateIngredients state }
-    in Right (Just "Ingredient added", newState)
+-- <recipe> ::= "(" <type> <ingredients> <process> ")"
+parseRecipe :: String -> Maybe (Recipe, String)
+parseRecipe input = 
+  let rest = skipWhitespace input
+  in trace ("Parsing recipe: " ++ rest) $
+     case rest of
+      ('(':rest1) -> trace "Found opening paren for recipe" $
+                     case parseType (skipWhitespace rest1) of
+                       Just (typ, rest2) -> trace ("Parsed type: " ++ typ) $
+                         case parseIngredients (skipWhitespace rest2) of
+                           Just (ingredients, rest3) -> trace ("Parsed ingredients: " ++ show ingredients) $
+                             case parseProcess (skipWhitespace rest3) of
+                               Just (process, rest4) -> trace ("Parsed process: " ++ show process) $
+                                 case skipWhitespace rest4 of
+                                   (')':rest5) -> Just (Recipe typ ingredients process, rest5)
+                                   _ -> trace "Failed to find closing paren for recipe" Nothing
+                               _ -> trace "Failed to parse process" Nothing
+                           _ -> trace "Failed to parse ingredients" Nothing
+                       _ -> trace "Failed to parse type" Nothing
+      _ -> trace "Failed to find opening paren for recipe" Nothing
 
-stateTransitionFerment :: State -> FermentCommand -> Either String (Maybe String, State)
-stateTransitionFerment state (FermentCommand beer time) = 
-    Right (Just "Beer fermented", state)
+-- <type> ::= "Lager" | "Ale" | "Stout"
+parseType :: String -> Maybe (String, String)
+parseType input = 
+  let rest = skipWhitespace input
+  in if take 5 rest == "Lager"
+     then Just ("Lager", drop 5 rest)
+     else if take 3 rest == "Ale"
+     then Just ("Ale", drop 3 rest)
+     else if take 5 rest == "Stout"
+     then Just ("Stout", drop 5 rest)
+     else Nothing
 
-stateTransitionCondition :: State -> ConditionCommand -> Either String (Maybe String, State)
-stateTransitionCondition state (ConditionCommand beer time) = 
-    Right (Just "Beer conditioned", state)
+-- Helper function to parse multiple ingredients recursively
+parseRestIngredients :: [String] -> String -> Maybe ([String], String)
+parseRestIngredients acc input = 
+  let rest = skipWhitespace input
+  in case rest of
+       (')':rest1) -> Just (reverse acc, rest1)  -- End of ingredients list
+       _           -> case parseIngredient rest of
+                        Just (ingredient, rest2) -> 
+                          case skipWhitespace rest2 of
+                            (')':rest3) -> parseRestIngredients (ingredient:acc) (skipWhitespace rest3)
+                            _ -> Nothing  -- failed to find the closing parenthesis for ingredient
+                        Nothing -> Nothing  -- Failed to parse an ingredient
+
+-- <ingredients> ::= "(" <ingredient>+ ")"
+parseIngredients :: String -> Maybe ([String], String)
+parseIngredients input =
+  let rest = skipWhitespace input
+  in case rest of
+       ('(':rest1) -> parseIngredientList [] (skipWhitespace rest1)
+       _ -> Nothing
+
+-- Helper function to parse a list of ingredients inside a single set of parentheses
+parseIngredientList :: [String] -> String -> Maybe ([String], String)
+parseIngredientList acc input =
+  let rest = skipWhitespace input
+  in case rest of
+       (')':rest1) -> Just (reverse acc, rest1)  -- Closing parenthesis, return list
+       _           -> case parseSingleIngredient rest of
+                        Just (ingredient, rest2) -> parseIngredientList (ingredient:acc) rest2
+                        Nothing -> Nothing  -- Failed to parse an ingredient
+
+-- <ingredient> ::= "(" "Malt" | "Hops" | "Yeast" | "Water" ")"
+parseIngredient :: String -> Maybe (String, String)
+parseIngredient input =
+  let rest = skipWhitespace input
+  in case rest of
+       ('(':r1) -> if take 4 r1 == "Malt" && r1 !! 4 == ')'
+                   then Just ("Malt", drop 5 r1)
+                   else if take 4 r1 == "Hops" && r1 !! 4 == ')'
+                   then Just ("Hops", drop 5 r1)
+                   else if take 5 r1 == "Yeast" && r1 !! 5 == ')'
+                   then Just ("Yeast", drop 6 r1)
+                   else if take 5 r1 == "Water" && r1 !! 5 == ')'
+                   then Just ("Water", drop 6 r1)
+                   else Nothing
+       _ -> Nothing
+
+-- Function to parse a single ingredient
+parseSingleIngredient :: String -> Maybe (String, String)
+parseSingleIngredient input =
+  let rest = skipWhitespace input
+  in if take 4 rest == "Malt"
+     then Just ("Malt", drop 4 rest)
+     else if take 4 rest == "Hops"
+     then Just ("Hops", drop 4 rest)
+     else if take 5 rest == "Yeast"
+     then Just ("Yeast", drop 5 rest)
+     else if take 5 rest == "Water"
+     then Just ("Water", drop 5 rest)
+     else Nothing
+
+-- <process> ::= "(" "Mash" <time> "Boil" <time> "Ferment" <time> "Condition" <time> ")"
+parseProcess :: String -> Maybe (Process, String)
+parseProcess input = 
+  let rest = skipWhitespace input
+  in case rest of
+       ('(':r1) -> do
+         -- Parse "Mash" stage
+         r2 <- parseStage "Mash" r1
+         (mashTime, r3) <- parseTime (skipWhitespace r2)
+         
+         -- Parse "Boil" stage
+         r4 <- parseStage "Boil" r3
+         (boilTime, r5) <- parseTime (skipWhitespace r4)
+         
+         -- Parse "Ferment" stage
+         r6 <- parseStage "Ferment" r5
+         (fermentTime, r7) <- parseTime (skipWhitespace r6)
+         
+         -- Parse "Condition" stage
+         r8 <- parseStage "Condition" r7
+         (conditionTime, r9) <- parseTime (skipWhitespace r8)
+         
+         -- Ensure the process ends with ")"
+         case skipWhitespace r9 of
+           (')':restFinal) -> Just (Process mashTime boilTime fermentTime conditionTime, restFinal)
+           _ -> Nothing
+       _ -> Nothing
+
+-- Helper function to parse a specific stage (e.g., "Mash", "Boil", "Ferment", "Condition")
+parseStage :: String -> String -> Maybe String
+parseStage stageName input =
+  let rest = skipWhitespace input
+  in if take (length stageName) rest == stageName
+     then Just (drop (length stageName) rest)
+     else Nothing
+
+-- <time> ::= <number> <unit>
+-- <number> ::= "1" | "2" | ... | "9"
+-- <unit> ::= "minutes" | "hour" | "hours" | "weeks" | "month" | "months"
+parseTime :: String -> Maybe (String, String)
+parseTime input =
+  let rest = skipWhitespace input
+  in case span (`elem` ['0'..'9']) rest of
+       ([], _) -> Nothing  -- No number found
+       (num, rest1) -> 
+         let rest2 = skipWhitespace rest1
+         in if take 7 rest2 == "minutes"
+            then Just (num ++ " minutes", drop 7 rest2)
+            else if take 4 rest2 == "hour"
+            then Just (num ++ " hour", drop 4 rest2)
+            else if take 5 rest2 == "hours"
+            then Just (num ++ " hours", drop 5 rest2)
+            else if take 5 rest2 == "weeks"
+            then Just (num ++ " weeks", drop 5 rest2)
+            else if take 5 rest2 == "month"
+            then Just (num ++ " month", drop 5 rest2)
+            else if take 6 rest2 == "months"
+            then Just (num ++ " months", drop 6 rest2)
+            else Nothing  -- Invalid unit
+
+

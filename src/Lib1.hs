@@ -41,6 +41,5 @@ completions = [
     "brewBeer",
     "addIngredient",
     "ferment",
-    "condition",
-    "testCommand"
+    "condition"
     ]
