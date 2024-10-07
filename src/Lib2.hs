@@ -25,7 +25,6 @@ data Query = AddBeer Beer
 data Ingredient = Malt | Hops | Yeast | Water
   deriving (Show, Eq)
 
-<<<<<<< HEAD
 data Beer = Beer 
   { beerName :: BeerName,
     beerType :: BeerType,
@@ -33,9 +32,6 @@ data Beer = Beer
     -- ingredients :: [Ingredient]
   } 
   deriving (Show, Eq)
-=======
--- Data Types
->>>>>>> d324d6d8f2c645e408b1ffa566d7faf250c3b683
 
 data BeerName = PaleAle | Guinness
   deriving (Show, Eq)
