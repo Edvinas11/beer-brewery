@@ -10,11 +10,14 @@
  
 <ingredients> ::= "(" <ingredient> | <ingredient> <ingredients> ")"
 
-<ingredient> ::= "(" "Malt" | "Hops" | "Yeast" | "Water" ")"
+<ingredient> ::= "Malt" | "Hops" | "Yeast" | "Water"
 
 <recipe> ::= "(" <type> <ingredients> <process> ")"
 
 <process> ::= "(" "Mash" <time> "Boil" <time> "Ferment" <time> "Condition" <time> ")"
+
+<bags> ::= <bag> | <bag> <bags>
+<bag> ::= <ingredients> | <bags> <ingredients>
 
 <period> ::= "minutes" | "hour" | "weeks" | "month" | "months"
 
@@ -23,7 +26,3 @@
 <brew_command> ::= "brewBeer" <recipe>
 
 <add_ingredient_command> ::= "addIngredient" <ingredient> <recipe>
-
-<ferment_command> ::= "ferment" <beer> <time>
-
-<condition_command> ::= "condition" <beer> <time>

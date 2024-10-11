@@ -10,14 +10,20 @@ module Lib2
     BeerType(..),
     AlcoholContent(..),
     parseBeerName,
-    parseIngredient,
     parseBeerType,
     parseNumber,
+    parseIngredient,
     parseAlcoholContent,
-    parseBeer,
     parseIngredients,
-    parseIngredientsList
+    parseWhitespaces,
+    parseWord,
+    parseBeer
     ) where
+
+import qualified Data.Char as C
+import qualified Data.List as L
+
+type Parser a = String -> Either String (a, String)
 
 -- | An entity which represets user input.
 data Query = AddBeer Beer
@@ -25,6 +31,9 @@ data Query = AddBeer Beer
   deriving (Show, Eq)
 
 data Ingredient = Malt | Hops | Yeast | Water
+  deriving (Show, Eq)
+
+data Ingredients = Ingredients String [Ingredient]
   deriving (Show, Eq)
 
 data Beer = Beer 
@@ -41,7 +50,10 @@ data BeerName = PaleAle | Guinness
 data BeerType = Lager | Ale | Stout
   deriving (Show, Eq)
 
-data AlcoholContent = AlcoholContent Int String
+data AlcoholContent = AlcoholContent Int Char
+  deriving (Show, Eq)
+
+data Time = Time Int String
   deriving (Show, Eq)
 
 -- | An entity which represents your program's state.
@@ -55,74 +67,150 @@ data State = State
 emptyState :: State
 emptyState = State {inventory = []}
 
--- <name> ::= "Pale Ale" | "Guinness"
-parseBeerName :: String -> Either String BeerName
-parseBeerName "PaleAle" = Right PaleAle
-parseBeerName "Guinness" = Right Guinness
-parseBeerName _ = Left "Invalid beer name"
+parseWord :: Parser String
+parseWord [] = Left "Empty string"
+parseWord str =
+  let (_, rest1) = case parseWhitespaces str of
+        Right (s, r) -> (s, r)
+        Left _ -> ("", str)
+      word = L.takeWhile C.isLetter rest1
+      rest = drop (length word) rest1
+   in case word of
+        [] -> Left "No word found"
+        _ -> Right (word, rest)
 
--- <ingredient> ::= "(" "Malt" | "Hops" | "Yeast" | "Water" ")"
-parseIngredient :: String -> Either String Ingredient
-parseIngredient "Malt" = Right Malt
-parseIngredient "Hops" = Right Hops
-parseIngredient "Yeast" = Right Yeast
-parseIngredient "Water" = Right Water
-parseIngredient _ = Left "Invalid ingredient"
+parseChar :: Char -> Parser Char
+parseChar c [] = Left ("Cannot find " ++ [c] ++ " in an empty input")
+parseChar c s@(h : t) = if c == h then Right (c, t) else Left (c : " is not found in " ++ s)
+
+parseWhitespaces :: Parser String
+parseWhitespaces [] = Right ("", [])
+parseWhitespaces s@(h : t) = if C.isSpace h then Right (" ", t) else Right ("", s)
+
+-- <name> ::= "PaleAle" | "Guinness"
+parseBeerName :: Parser BeerName
+parseBeerName = \input ->
+  case parseWord input of
+    Right (word, rest) -> case word of
+      "PaleAle" -> Right (PaleAle, rest)
+      "Guinness" -> Right (Guinness, rest)
+      _ -> Left "Beer name not found"
+    Left e -> Left e
 
 -- <type> ::= "Lager" | "Ale" | "Stout"
-parseBeerType :: String -> Either String BeerType
-parseBeerType "Lager" = Right Lager
-parseBeerType "Ale" = Right Ale
-parseBeerType "Stout" = Right Stout
-parseBeerType _ = Left "Invalid beer type"
+parseBeerType :: Parser BeerType
+parseBeerType = \input ->
+  case parseWord input of
+    Right(word, rest) -> case word of
+      "Lager" -> Right (Lager, rest)
+      "Ale" -> Right (Ale, rest)
+      "Stout" -> Right (Stout, rest)
+      _ -> Left "Beer type not found"
+    Left e -> Left e
+
+-- <ingredient> ::= "(" "Malt" | "Hops" | "Yeast" | "Water" ")"
+parseIngredient :: Parser Ingredient
+parseIngredient = \input ->
+  case parseWord input of
+    Right(word, rest) -> case word of
+      "Malt" -> Right (Malt, rest)
+      "Hops" -> Right (Hops, rest)
+      "Yeast" -> Right (Yeast, rest)
+      "Water" -> Right (Water, rest)
+      _ -> Left "Ingredient not found"
+    Left e -> Left e
+
+-- <ingredients> ::= <ingredient> {<ingredient>}
+parseIngredients :: Parser [Ingredient]
+parseIngredients input =
+  case parseIngredient input of
+    Right (ingredient, rest) -> 
+      case parseWhitespaces rest of  -- Handle possible whitespace between ingredients
+        Right (_, rest1) -> 
+          case parseIngredients rest1 of  -- Recursively parse the next ingredient
+            Right (ingredients, rest2) -> Right (ingredient : ingredients, rest2)
+            Left _ -> Right ([ingredient], rest1)  -- No more ingredients
+        Left _ -> Right ([ingredient], rest)  -- No whitespace, end of list
+    Left e -> Left "Error parsing ingredients list"
 
 -- <number> ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
-parseNumber :: String -> (Int, String)
-parseNumber [] = error "No input to parse"
-parseNumber (x:xs)
-  | x >= '0' && x <= '9' = (fromEnum x - fromEnum '0', xs)
-  | otherwise = error "Invalid character: expected a digit"
+parseNumber :: Parser Int
+parseNumber input =
+  case parseWhitespaces input of
+    Right (_, rest) -> 
+      let digits = L.takeWhile C.isDigit rest
+          restDigits = L.dropWhile C.isDigit rest
+      in if not (null digits)
+         then Right (read digits, restDigits)
+         else Left "Invalid character: expected a digit"
+    Left err -> Left err
+
+-- combine two parsers
+and2' :: (a -> b -> c) -> Parser a -> Parser b -> Parser c
+and2' c a b = \input ->
+  case a input of
+    Right (v1, r1) ->
+      case b r1 of
+        Right (v2, r2) -> Right (c v1 v2, r2)
+        Left e2 -> Left e2
+    Left e1 -> Left e1
+
+-- accumulate items into a list
+and2'' :: Parser a -> Parser [a] -> Parser [a]
+and2'' a b = \input ->
+  case a input of
+    Right (v1, r1) ->
+      case b r1 of
+        Right (v2, r2) -> Right (v1 : v2, r2)
+        Left e2 -> Left e2
+    Left e1 -> Left e1
+
+-- provide alternative parsing options
+or2' :: [Parser a] -> Parser [a] -> Parser [a]
+or2' [] b = \input -> b input
+or2' (a : _) b = \input ->
+  case b input of
+    Right (v1, r1) -> Right (v1, r1)
+    Left e1 ->
+      case a input of
+        Right (v2, r2) -> Right ([v2], r2)
+        Left e2 -> Left (e1 ++ ", " ++ e2)
+
+and4' :: (a -> b -> c -> d -> e) -> Parser a -> Parser b -> Parser c -> Parser d -> Parser e
+and4' f p1 p2 p3 p4 = \input -> 
+  case p1 input of
+    Right (v1, r1) -> 
+      case p2 r1 of
+        Right (v2, r2) -> 
+          case p3 r2 of
+            Right (v3, r3) ->
+              case p4 r3 of
+                Right (v4, r4) -> Right (f v1 v2 v3 v4, r4)
+                Left e4 -> Left e4
+            Left e3 -> Left e3
+        Left e2 -> Left e2
+    Left e1 -> Left e1
+
+and3' :: (a -> b -> c -> d) -> Parser a -> Parser b -> Parser c -> Parser d
+and3' d a b c = \input ->
+  case a input of
+    Right (v1, r1) ->
+      case b r1 of
+        Right (v2, r2) ->
+          case c r2 of
+            Right (v3, r3) -> Right (d v1 v2 v3, r3)
+            Left e3 -> Left e3
+        Left e2 -> Left e2
+    Left e1 -> Left e1
 
 -- <alcohol_content> ::= <number> "%"
-parseAlcoholContent :: String -> Either String AlcoholContent
-parseAlcoholContent input =
-  let (number, rest) = parseNumber input
-  in case rest of
-    ('%':[]) -> Right $ AlcoholContent number "%"
-    _        -> Left "Invalid format: percentage sign is missing"
+parseAlcoholContent :: Parser AlcoholContent
+parseAlcoholContent = 
+  and2' (\num _ -> AlcoholContent num '%') parseNumber (parseChar '%')
 
--- <beer> ::= "(" <name> <type> <alcohol_content> <ingredients> ")"
-parseBeer :: String -> Either String Beer
-parseBeer input = case words input of
-  (beerNameStr : beerTypeStr : alcoholContentStr : ingredientStr) ->
-    case parseBeerName beerNameStr of
-      Right beerName -> case parseBeerType beerTypeStr of
-        Right beerType -> case parseAlcoholContent alcoholContentStr of
-          Right alcoholContent -> 
-            let ingredientsStr = unwords ingredientStr 
-            in case parseIngredients ingredientsStr of
-              Right ingredients -> Right $ Beer beerName beerType alcoholContent ingredients
-              Left e -> Left e
-          Left e -> Left e
-        Left e -> Left e
-      Left e -> Left e
-  _ -> Left "Invalid beer format"
-
--- <ingredients> ::= "(" <ingredient> | <ingredient> <ingredients> ")"
-parseIngredients :: String -> Either String [Ingredient]
-parseIngredients input = 
-  if head input == '(' && last input == ')'
-  then let ingredientWords = words (init (tail input)) -- Remove the parentheses and split words
-       in parseIngredientsList ingredientWords
-  else Left "Ingredients must be enclosed in parentheses"
-
-parseIngredientsList :: [String] -> Either String [Ingredient]
-parseIngredientsList [] = Right []
-parseIngredientsList (x:xs) = case parseIngredient x of
-  Right ingredient -> case parseIngredientsList xs of
-    Right ingredients -> Right (ingredient : ingredients)
-    Left e -> Left e
-  Left e -> Left e
+-- <beer> ::= <name> <type> <alcohol_content> <ingredients>
+parseBeer :: Parser Beer
+parseBeer = and4' Beer parseBeerName parseBeerType parseAlcoholContent parseIngredients
 
 -- | Parses user's input.
 -- The function must have tests.
