@@ -20,7 +20,10 @@ module Lib2
     parseBeer,
     parsePeriod,
     parseTime,
-    parseProcess
+    parseProcess,
+    parseRecipe,
+    parseBag,
+    parseBags
     ) where
 
 import qualified Data.Char as C
@@ -47,6 +50,21 @@ data Beer = Beer
   } 
   deriving (Show, Eq)
 
+data Process = Process
+  { 
+    mashTime :: Time, 
+    boilTime :: Time, 
+    fermentTime :: Time, 
+    conditionTime :: Time
+  } deriving (Show, Eq)
+
+data Recipe = Recipe
+  {
+    recipeType :: BeerType,
+    recipeIngredients :: [Ingredient],
+    recipeProcess :: Process
+  } deriving (Show, Eq)
+
 data BeerName = PaleAle | Guinness
   deriving (Show, Eq)
 
@@ -58,6 +76,11 @@ data AlcoholContent = AlcoholContent Int Char
 
 data Time = Time Int String
   deriving (Show, Eq)
+
+data Bag = BagWithIngredients [Ingredient] | BagWithBagsAndIngredients [Bag] [Ingredient]
+  deriving (Show, Eq)
+
+type Bags = [Bag]
 
 -- | An entity which represents your program's state.
 data State = State
@@ -121,7 +144,7 @@ parseBeerType = \input ->
       _ -> Left "Beer type not found"
     Left e -> Left e
 
--- <ingredient> ::= "(" "Malt" | "Hops" | "Yeast" | "Water" ")"
+-- <ingredient> ::= "Malt" | "Hops" | "Yeast" | "Water"
 parseIngredient :: Parser Ingredient
 parseIngredient = \input ->
   case parseWord input of
@@ -133,18 +156,27 @@ parseIngredient = \input ->
       _ -> Left "Ingredient not found"
     Left e -> Left e
 
--- <ingredients> ::= <ingredient> {<ingredient>}
+-- <ingredients> ::= "(" <ingredient> | <ingredient> <ingredients> ")"
 parseIngredients :: Parser [Ingredient]
-parseIngredients input =
+parseIngredients = 
+  and3' 
+    (\_ ingredients _ -> ingredients)  -- Combine opening paren, ingredients list, and closing paren
+    (parseChar '(')                    -- Opening parenthesis
+    (and2' (\ingr rest -> ingr : rest) parseIngredient (parseRemainingIngredients))  -- Parse ingredients recursively
+    (parseChar ')')                    -- Closing parenthesis
+
+-- Helper to parse the remaining ingredients in the list
+parseRemainingIngredients :: Parser [Ingredient]
+parseRemainingIngredients input =
   case parseIngredient input of
-    Right (ingredient, rest) -> 
-      case parseWhitespaces rest of  -- Handle possible whitespace between ingredients
-        Right (_, rest1) -> 
-          case parseIngredients rest1 of  -- Recursively parse the next ingredient
+    Right (ingredient, rest) ->
+      case parseWhitespaces rest of
+        Right (_, rest1) ->
+          case parseRemainingIngredients rest1 of
             Right (ingredients, rest2) -> Right (ingredient : ingredients, rest2)
-            Left _ -> Right ([ingredient], rest1)  -- No more ingredients
-        Left _ -> Right ([ingredient], rest)  -- No whitespace, end of list
-    Left e -> Left "Error parsing ingredients list"
+            Left _ -> Right ([ingredient], rest1)
+        Left _ -> Right ([ingredient], rest)
+    Left _ -> Right ([], input)  -- No more ingredients
 
 -- <number> ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
 parseNumber :: Parser Int
@@ -237,6 +269,25 @@ and6' comb p1 p2 p3 p4 p5 p6 = \input ->
         Left e2 -> Left e2
     Left e1 -> Left e1
 
+and5' :: (a -> b -> c -> d -> e -> f) 
+      -> Parser a -> Parser b -> Parser c -> Parser d -> Parser e -> Parser f
+and5' comb p1 p2 p3 p4 p5 = \input -> 
+  case p1 input of
+    Right (v1, r1) -> 
+      case p2 r1 of
+        Right (v2, r2) -> 
+          case p3 r2 of
+            Right (v3, r3) -> 
+              case p4 r3 of
+                Right (v4, r4) -> 
+                  case p5 r4 of
+                    Right (v5, r5) -> Right (comb v1 v2 v3 v4 v5, r5)
+                    Left e5 -> Left e5
+                Left e4 -> Left e4
+            Left e3 -> Left e3
+        Left e2 -> Left e2
+    Left e1 -> Left e1
+
 or6' :: Parser a -> Parser a -> Parser a -> Parser a -> Parser a -> Parser a -> Parser a
 or6' p1 p2 p3 p4 p5 p6 = \input ->
   case p1 input of
@@ -289,6 +340,12 @@ and10' comb p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 = \input ->
         Left e2 -> Left e2
     Left e1 -> Left e1
 
+or2 :: Parser a -> Parser a -> Parser a
+or2 p1 p2 = \input ->
+  case p1 input of
+    Right result -> Right result  -- If the first parser succeeds, return its result
+    Left _ -> p2 input            -- If the first parser fails, try the second parser
+
 -- <alcohol_content> ::= <number> "%"
 parseAlcoholContent :: Parser AlcoholContent
 parseAlcoholContent = 
@@ -302,10 +359,7 @@ parseBeer =
     parseBeerName
     parseBeerType
     parseAlcoholContent
-    (and2' (\_ ingredients -> ingredients) 
-      (parseChar '(') 
-      (and2' (\ingredients _ -> ingredients) 
-        parseIngredients (parseChar ')')))
+    parseIngredients
 
 parseMinutes :: Parser String
 parseMinutes = \input -> case parseWord input of
@@ -361,21 +415,72 @@ parseCondition = \input -> case parseWord input of
   _ -> Left "Expected Mash"
 
 -- <process> ::= "(" "Mash" <time> "Boil" <time> "Ferment" <time> "Condition" <time> ")"
-parseProcess :: Parser (String, Time, String, Time, String, Time, String, Time)
+parseProcess :: Parser Process
 parseProcess =
   and10'
-    (\_ mash time1 boil time2 ferment time3 condition time4 _ ->
-      (mash, time1, boil, time2, ferment, time3, condition, time4))
-    (parseChar '(')      -- Opening parenthesis
-    parseMash            -- "Mash"
-    parseTime            -- <time> for Mash
-    parseBoil            -- "Boil"
-    parseTime            -- <time> for Boil
-    parseFerment         -- "Ferment"
-    parseTime            -- <time> for Ferment
-    parseCondition       -- "Condition"
-    parseTime            -- <time> for Condition
-    (parseChar ')')      -- Closing parenthesis
+    (\_ _ mashTime _ boilTime _ fermentTime _ conditionTime _ -> 
+      Process mashTime boilTime fermentTime conditionTime)
+    (parseChar '(')      
+    parseMash            
+    parseTime           
+    parseBoil         
+    parseTime        
+    parseFerment      
+    parseTime         
+    parseCondition     
+    parseTime      
+    (parseChar ')')   
+
+-- <recipe> ::= "(" <type> <ingredients> <process> ")"
+parseRecipe :: Parser Recipe
+parseRecipe =
+  and5'
+    (\_ recipeType recipeIngredients recipeProcess _ -> 
+      Recipe recipeType recipeIngredients recipeProcess)
+    (parseChar '(') 
+    parseBeerType
+    parseIngredients
+    parseProcess
+    (parseChar ')') 
+
+-- <bags> ::= "(" <bag> ")" | "(" <bag> <bags> ")"
+parseBags :: Parser Bags
+parseBags input =
+  case parseChar '(' input of
+    Right (_, rest) ->
+      case parseBag rest of
+        Right (bag, rest1) ->
+          case parseChar ')' rest1 of
+            Right (_, restFinal) -> Right ([bag], restFinal)  -- Single bag
+            Left _ ->  -- Try to parse multiple bags recursively
+              case parseBags rest1 of
+                Right (bags, rest2) ->
+                  case parseChar ')' rest2 of
+                    Right (_, restFinal) -> Right (bag : bags, restFinal)
+                    Left e -> Left e
+                Left e -> Left e
+        Left e -> Left e
+    Left e -> Left e
+
+-- <bag> ::= <ingredients> | "(" <bags> <ingredients> ")"
+parseBag :: Parser Bag
+parseBag input =
+  case parseIngredients input of
+    Right (ingredients, rest) -> Right (BagWithIngredients ingredients, rest)
+    Left _ ->
+      -- Try parsing nested bags followed by ingredients
+      case parseChar '(' input of
+        Right (_, rest) ->
+          case parseBags rest of
+            Right (bags, rest1) ->
+              case parseIngredients rest1 of
+                Right (ingredients, rest2) ->
+                  case parseChar ')' rest2 of
+                    Right (_, restFinal) -> Right (BagWithBagsAndIngredients bags ingredients, restFinal)
+                    Left e -> Left e
+                Left e -> Left e
+            Left e -> Left e
+        Left e -> Left e
 
 -- | Parses user's input.
 -- The function must have tests.

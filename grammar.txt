@@ -1,4 +1,4 @@
-<beer> ::= <name> <type> <alcohol_content> "(" <ingredients> ")"
+<beer> ::= <name> <type> <alcohol_content> <ingredients>
 <name> ::= "PaleAle" | "Guinness"
 <type> ::= "Lager" | "Ale" | "Stout"
 <alcohol_content> ::= <number> "%"
@@ -9,15 +9,13 @@
 <ingredient> ::= "Malt" | "Hops" | "Yeast" | "Water"
 
 <recipe> ::= "(" <type> <ingredients> <process> ")"
-
 <process> ::= "(" "Mash" <time> "Boil" <time> "Ferment" <time> "Condition" <time> ")"
 
-<bags> ::= <bag> | <bag> <bags>
-<bag> ::= <ingredients> | <bags> <ingredients>
+<bags> ::= "(" <bag> ")" | "(" <bag> <bags> ")"
+<bag> ::= <ingredients> | "(" <bags> <ingredients> ")"
 
 <period> ::= "minutes" | "hour" | "weeks" | "month" | "months"
 <time> ::= <number> <period>
 
 <brew_command> ::= "brewBeer" <recipe>
-
 <add_ingredient_command> ::= "addIngredient" <ingredient> <recipe>
