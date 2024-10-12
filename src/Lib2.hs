@@ -17,7 +17,10 @@ module Lib2
     parseIngredients,
     parseWhitespaces,
     parseWord,
-    parseBeer
+    parseBeer,
+    parsePeriod,
+    parseTime,
+    parseProcess
     ) where
 
 import qualified Data.Char as C
@@ -80,8 +83,18 @@ parseWord str =
         _ -> Right (word, rest)
 
 parseChar :: Char -> Parser Char
-parseChar c [] = Left ("Cannot find " ++ [c] ++ " in an empty input")
-parseChar c s@(h : t) = if c == h then Right (c, t) else Left (c : " is not found in " ++ s)
+parseChar _ [] = Left "Unexpected end of input"
+parseChar c input =
+  let input' = skipSpaces input
+   in if null input'
+        then Left "Unexpected end of input"
+        else
+          if head input' == c
+            then Right (c, tail input')
+            else Left $ "Expected '" ++ [c] ++ "', but found '" ++ [head input'] ++ "'"
+
+skipSpaces :: String -> String
+skipSpaces = dropWhile (== ' ')
 
 parseWhitespaces :: Parser String
 parseWhitespaces [] = Right ("", [])
@@ -203,6 +216,79 @@ and3' d a b c = \input ->
         Left e2 -> Left e2
     Left e1 -> Left e1
 
+and6' :: (a -> b -> c -> d -> e -> f -> g) -> Parser a -> Parser b -> Parser c -> Parser d -> Parser e -> Parser f -> Parser g
+and6' comb p1 p2 p3 p4 p5 p6 = \input ->
+  case p1 input of
+    Right (v1, r1) ->
+      case p2 r1 of
+        Right (v2, r2) ->
+          case p3 r2 of
+            Right (v3, r3) ->
+              case p4 r3 of
+                Right (v4, r4) ->
+                  case p5 r4 of
+                    Right (v5, r5) ->
+                      case p6 r5 of
+                        Right (v6, r6) -> Right (comb v1 v2 v3 v4 v5 v6, r6)
+                        Left e6 -> Left e6
+                    Left e5 -> Left e5
+                Left e4 -> Left e4
+            Left e3 -> Left e3
+        Left e2 -> Left e2
+    Left e1 -> Left e1
+
+or6' :: Parser a -> Parser a -> Parser a -> Parser a -> Parser a -> Parser a -> Parser a
+or6' p1 p2 p3 p4 p5 p6 = \input ->
+  case p1 input of
+    Right r1 -> Right r1
+    Left e1 -> case p2 input of
+      Right r2 -> Right r2
+      Left e2 -> case p3 input of
+        Right r3 -> Right r3
+        Left e3 -> case p4 input of
+          Right r4 -> Right r4
+          Left e4 -> case p5 input of
+            Right r5 -> Right r5
+            Left e5 -> case p6 input of
+              Right r6 -> Right r6
+              Left e6 -> Left (e1 ++ "; " ++ e2 ++ "; " ++ e3 ++ "; " ++ e4 ++ "; " ++ e5 ++ "; " ++ e6)
+
+and10' :: (a -> b -> c -> d -> e -> f -> g -> h -> i -> j -> k) 
+       -> Parser a -> Parser b -> Parser c -> Parser d -> Parser e -> Parser f 
+       -> Parser g -> Parser h -> Parser i -> Parser j -> Parser k
+and10' comb p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 = \input -> 
+  case p1 input of
+    Right (v1, r1) -> 
+      case p2 r1 of
+        Right (v2, r2) -> 
+          case p3 r2 of
+            Right (v3, r3) -> 
+              case p4 r3 of
+                Right (v4, r4) -> 
+                  case p5 r4 of
+                    Right (v5, r5) -> 
+                      case p6 r5 of
+                        Right (v6, r6) -> 
+                          case p7 r6 of
+                            Right (v7, r7) -> 
+                              case p8 r7 of
+                                Right (v8, r8) -> 
+                                  case p9 r8 of
+                                    Right (v9, r9) -> 
+                                      case p10 r9 of
+                                        Right (v10, r10) -> 
+                                          Right (comb v1 v2 v3 v4 v5 v6 v7 v8 v9 v10, r10)
+                                        Left e10 -> Left e10
+                                    Left e9 -> Left e9
+                                Left e8 -> Left e8
+                            Left e7 -> Left e7
+                        Left e6 -> Left e6
+                    Left e5 -> Left e5
+                Left e4 -> Left e4
+            Left e3 -> Left e3
+        Left e2 -> Left e2
+    Left e1 -> Left e1
+
 -- <alcohol_content> ::= <number> "%"
 parseAlcoholContent :: Parser AlcoholContent
 parseAlcoholContent = 
@@ -210,7 +296,86 @@ parseAlcoholContent =
 
 -- <beer> ::= <name> <type> <alcohol_content> <ingredients>
 parseBeer :: Parser Beer
-parseBeer = and4' Beer parseBeerName parseBeerType parseAlcoholContent parseIngredients
+parseBeer =
+  and4'
+    (\nameStr typeStr contentStr ingredientsStr -> Beer nameStr typeStr contentStr ingredientsStr)
+    parseBeerName
+    parseBeerType
+    parseAlcoholContent
+    (and2' (\_ ingredients -> ingredients) 
+      (parseChar '(') 
+      (and2' (\ingredients _ -> ingredients) 
+        parseIngredients (parseChar ')')))
+
+parseMinutes :: Parser String
+parseMinutes = \input -> case parseWord input of
+  Right ("minutes", rest) -> Right ("minutes", rest)
+  _ -> Left "Expected minutes"
+
+parseHour :: Parser String
+parseHour = \input -> case parseWord input of
+  Right ("hour", rest) -> Right ("hour", rest)
+  _ -> Left "Expected 'hour'"
+
+parseWeeks :: Parser String
+parseWeeks = \input -> case parseWord input of
+  Right ("weeks", rest) -> Right ("weeks", rest)
+  _ -> Left "Expected 'weeks'"
+
+parseMonth :: Parser String
+parseMonth = \input -> case parseWord input of
+  Right ("month", rest) -> Right ("month", rest)
+  _ -> Left "Expected 'month'"
+
+parseMonths :: Parser String
+parseMonths = \input -> case parseWord input of
+  Right ("months", rest) -> Right ("months", rest)
+  _ -> Left "Expected 'months'"
+
+-- <period> ::= "minutes" | "hour" | "weeks" | "month" | "months"
+parsePeriod :: Parser String
+parsePeriod = or6' parseMinutes parseHour parseWeeks parseMonth parseMonths parseWord
+
+-- <time> ::= <number> <period>
+parseTime :: Parser Time
+parseTime = and2' Time parseNumber parsePeriod
+
+parseMash :: Parser String
+parseMash = \input -> case parseWord input of
+  Right ("Mash", rest) -> Right ("Mash", rest)
+  _ -> Left "Expected Mash"
+
+parseBoil :: Parser String
+parseBoil = \input -> case parseWord input of
+  Right ("Boil", rest) -> Right ("Boil", rest)
+  _ -> Left "Expected Mash"
+
+parseFerment :: Parser String
+parseFerment = \input -> case parseWord input of
+  Right ("Ferment", rest) -> Right ("Ferment", rest)
+  _ -> Left "Expected Mash"
+
+parseCondition :: Parser String
+parseCondition = \input -> case parseWord input of
+  Right ("Condition", rest) -> Right ("Condition", rest)
+  _ -> Left "Expected Mash"
+
+-- <process> ::= "(" "Mash" <time> "Boil" <time> "Ferment" <time> "Condition" <time> ")"
+parseProcess :: Parser (String, Time, String, Time, String, Time, String, Time)
+parseProcess =
+  and10'
+    (\_ mash time1 boil time2 ferment time3 condition time4 _ ->
+      (mash, time1, boil, time2, ferment, time3, condition, time4))
+    (parseChar '(')      -- Opening parenthesis
+    parseMash            -- "Mash"
+    parseTime            -- <time> for Mash
+    parseBoil            -- "Boil"
+    parseTime            -- <time> for Boil
+    parseFerment         -- "Ferment"
+    parseTime            -- <time> for Ferment
+    parseCondition       -- "Condition"
+    parseTime            -- <time> for Condition
+    (parseChar ')')      -- Closing parenthesis
 
 -- | Parses user's input.
 -- The function must have tests.
