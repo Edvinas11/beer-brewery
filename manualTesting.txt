@@ -1,0 +1,5 @@
+Run the program with - 'stack run fp2024-two --allow-different-user'
+
+>>> AddIngredients (Water Hops)
+Ingredients added: [Water,Hops]
+
