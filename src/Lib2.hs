@@ -9,6 +9,8 @@ module Lib2
     Beer(..),
     BeerType(..),
     AlcoholContent(..),
+    BeerName(..),
+    Bag(..),
     parseBeerName,
     parseBeerType,
     parseNumber,
