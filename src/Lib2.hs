@@ -32,8 +32,10 @@ import qualified Data.List as L
 type Parser a = String -> Either String (a, String)
 
 -- | An entity which represets user input.
-data Query = AddBeer Beer
-           | RemoveBeer String
+data Query = AddIngredients [Ingredient]
+           | AddBags Bags
+           | BrewBeer Beer
+           | View
   deriving (Show, Eq)
 
 data Ingredient = Malt | Hops | Yeast | Water
@@ -85,13 +87,38 @@ type Bags = [Bag]
 -- | An entity which represents your program's state.
 data State = State
   {
-    inventory :: [Beer]
+    inventory :: [Beer],
+    ingredientsStock :: [Ingredient]
   }
   deriving (Show, Eq)
 
 -- | Creates an initial program's state.
 emptyState :: State
-emptyState = State {inventory = []}
+emptyState = State {inventory = [], ingredientsStock = []}
+
+-- | Parses user's input.
+-- The function must have tests.
+parseQuery :: String -> Either String Query
+parseQuery input =
+  case parseWhitespaces input of
+    Right (_, rest) ->
+      case parseWord rest of
+        Right ("AddIngredients", rest1) ->
+          case parseIngredients rest1 of
+            Right (ingredients, rest2) -> Right (AddIngredients ingredients)
+            Left err -> Left $ "Failed to parse ingredients: " ++ err
+        Right ("AddBags", rest1) ->
+          case parseBags rest1 of
+            Right (bags, _) -> Right (AddBags bags)
+            Left err -> Left $ "Failed to parse bags: " ++ err
+        Right ("View", _) -> Right View
+        Right ("BrewBeer", rest1) ->
+          case parseBeer rest1 of
+            Right (beer, _) -> Right (BrewBeer beer)
+            Left err -> Left $ "Failed to parse beer: " ++ err
+        Right (unknownCommand, _) -> Left $ "Unknown command: " ++ unknownCommand
+        Left err -> Left $ "Failed to parse command: " ++ err
+    Left err -> Left $ "Failed to parse query: " ++ err
 
 parseWord :: Parser String
 parseWord [] = Left "Empty string"
@@ -160,10 +187,10 @@ parseIngredient = \input ->
 parseIngredients :: Parser [Ingredient]
 parseIngredients = 
   and3' 
-    (\_ ingredients _ -> ingredients)  -- Combine opening paren, ingredients list, and closing paren
-    (parseChar '(')                    -- Opening parenthesis
+    (\_ ingredients _ -> ingredients)
+    (parseChar '(')                 
     (and2' (\ingr rest -> ingr : rest) parseIngredient (parseRemainingIngredients))  -- Parse ingredients recursively
-    (parseChar ')')                    -- Closing parenthesis
+    (parseChar ')')  
 
 -- Helper to parse the remaining ingredients in the list
 parseRemainingIngredients :: Parser [Ingredient]
@@ -343,23 +370,25 @@ and10' comb p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 = \input ->
 or2 :: Parser a -> Parser a -> Parser a
 or2 p1 p2 = \input ->
   case p1 input of
-    Right result -> Right result  -- If the first parser succeeds, return its result
-    Left _ -> p2 input            -- If the first parser fails, try the second parser
+    Right result -> Right result
+    Left _ -> p2 input 
 
 -- <alcohol_content> ::= <number> "%"
 parseAlcoholContent :: Parser AlcoholContent
 parseAlcoholContent = 
   and2' (\num _ -> AlcoholContent num '%') parseNumber (parseChar '%')
 
--- <beer> ::= <name> <type> <alcohol_content> <ingredients>
+-- <beer> ::= "(" <name> <type> <alcohol_content> <ingredients> ")"
 parseBeer :: Parser Beer
 parseBeer =
-  and4'
-    (\nameStr typeStr contentStr ingredientsStr -> Beer nameStr typeStr contentStr ingredientsStr)
+  and6'
+    (\_ nameStr typeStr contentStr ingredientsStr _ -> Beer nameStr typeStr contentStr ingredientsStr)
+    (parseChar '(')
     parseBeerName
     parseBeerType
     parseAlcoholContent
     parseIngredients
+    (parseChar ')')
 
 parseMinutes :: Parser String
 parseMinutes = \input -> case parseWord input of
@@ -482,15 +511,52 @@ parseBag input =
             Left e -> Left e
         Left e -> Left e
 
--- | Parses user's input.
--- The function must have tests.
-parseQuery :: String -> Either String Query
-parseQuery _ = Left "Not implemented 2"
-
 -- | Updates a state according to a query.
--- This allows your program to share the state
--- between repl iterations.
--- Right contains an optional message to print and
--- an updated program's state.
 stateTransition :: State -> Query -> Either String (Maybe String, State)
-stateTransition _ _ = Left "Not implemented 3"
+stateTransition st query = case query of
+  AddIngredients ingredients ->
+    let newState = st {ingredientsStock = ingredients ++ ingredientsStock st}
+     in Right (Just $ "Ingredients added: " ++ show ingredients, newState)
+  AddBags bags ->
+    let ingredientsFromBags = concatMap extractIngredientsFromBag bags
+        newState = st {ingredientsStock = ingredientsFromBags ++ ingredientsStock st}
+     in Right (Just $ "Ingredients added from bags: " ++ show ingredientsFromBags, newState) 
+  View ->
+    let inventoryStr = if null (inventory st)
+                     then "No beers in inventory."
+                     else unlines (map showBeer (inventory st))
+        ingredientsStr = if null (ingredientsStock st)
+                       then "No ingredients in stock."
+                       else unlines (map show (ingredientsStock st))
+     in Right (Just $ "Inventory:\n" ++ inventoryStr ++ "\nIngredients:\n" ++ ingredientsStr, st)
+  BrewBeer beer ->
+    let beerIngredients = ingredients beer
+        currentStock = ingredientsStock st
+    in case hasEnoughIngredients beerIngredients currentStock of
+      Left err -> Left err -- not enough ingredients
+      Right updatedStock ->
+        let newState = st { inventory = beer : inventory st, ingredientsStock = updatedStock }
+         in Right (Just $ "Brewed beer: " ++ show (beerName beer), newState)
+
+hasEnoughIngredients :: [Ingredient] -> [Ingredient] -> Either String [Ingredient]
+hasEnoughIngredients [] stock = Right stock
+hasEnoughIngredients (ingr:rest) stock =
+  case removeIngredient ingr stock of
+    Left err -> Left err  -- Not enough of this ingredient
+    Right updatedStock -> hasEnoughIngredients rest updatedStock
+
+removeIngredient :: Ingredient -> [Ingredient] -> Either String [Ingredient]
+removeIngredient ingredient stock =
+  case L.elemIndex ingredient stock of
+    Nothing -> Left $ "Not enough " ++ show ingredient ++ " in stock."
+    Just idx -> Right (take idx stock ++ drop (idx + 1) stock)
+
+extractIngredientsFromBag :: Bag -> [Ingredient]
+extractIngredientsFromBag (BagWithIngredients ingredients) = ingredients
+extractIngredientsFromBag (BagWithBagsAndIngredients bags ingredients) =
+  concatMap extractIngredientsFromBag bags ++ ingredients
+
+showBeer :: Beer -> String
+showBeer beer = "Beer: " ++ show (beerName beer) ++ ", Type: " ++ show (beerType beer) ++ 
+                ", Alcohol: " ++ show (alcoholContent beer) ++ 
+                ", Ingredients: " ++ show (ingredients beer)

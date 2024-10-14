@@ -1,3 +1,22 @@
+View
+BrewBeer (PaleAle Ale 5% (Water))
+AddBags ((Water))
+BrewBeer (PaleAle Ale 5% (Water))
+View
+BrewBeer PaleAle Ale 1% (Hops)
+View
+AddIngredients (Water Hops)
+View
+BrewBeer PaleAle Ale 5% (Water)
+AddIngredients (Water Hops)
+View
+AddBags ((((Hops Hops) ((Yeast Hops Malt))) (Hops Water)))
+View
+AddIngredients (Water Hops)
+view()
+AddIngredients (Water Hops)
+View()
+View
 viewState
 parseQuery
 parseQuery "brewBeer (Lager (Malt Hops Yeast Water) (Mash 1 hour Boil 1 hour Ferment 2 weeks Condition 1 month))"

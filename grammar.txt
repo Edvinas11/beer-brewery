@@ -1,11 +1,11 @@
-<beer> ::= <name> <type> <alcohol_content> <ingredients>
+<beer> ::= "(" <name> <type> <alcohol_content> <ingredients> ")"
 <name> ::= "PaleAle" | "Guinness"
 <type> ::= "Lager" | "Ale" | "Stout"
 <alcohol_content> ::= <number> "%"
 
 <number> ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
  
-<ingredients> ::= <ingredient> | <ingredient> <ingredients>
+<ingredients> ::= "(" <ingredient> | <ingredient> <ingredients> ")"
 <ingredient> ::= "Malt" | "Hops" | "Yeast" | "Water"
 
 <recipe> ::= "(" <type> <ingredients> <process> ")"
@@ -17,5 +17,6 @@
 <period> ::= "minutes" | "hour" | "weeks" | "month" | "months"
 <time> ::= <number> <period>
 
-<brew_command> ::= "brewBeer" <recipe>
-<add_ingredient_command> ::= "addIngredient" <ingredient> <recipe>
+<add_ingredient> ::= "AddIngredient" <ingredients>
+<add_bag> ::= "AddBag" <bags>
+<brew> ::= "BrewBeer" <beer>
