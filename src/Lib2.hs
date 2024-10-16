@@ -229,42 +229,6 @@ and2' c a b = \input ->
         Left e2 -> Left e2
     Left e1 -> Left e1
 
--- accumulate items into a list
-and2'' :: Parser a -> Parser [a] -> Parser [a]
-and2'' a b = \input ->
-  case a input of
-    Right (v1, r1) ->
-      case b r1 of
-        Right (v2, r2) -> Right (v1 : v2, r2)
-        Left e2 -> Left e2
-    Left e1 -> Left e1
-
--- provide alternative parsing options
-or2' :: [Parser a] -> Parser [a] -> Parser [a]
-or2' [] b = \input -> b input
-or2' (a : _) b = \input ->
-  case b input of
-    Right (v1, r1) -> Right (v1, r1)
-    Left e1 ->
-      case a input of
-        Right (v2, r2) -> Right ([v2], r2)
-        Left e2 -> Left (e1 ++ ", " ++ e2)
-
-and4' :: (a -> b -> c -> d -> e) -> Parser a -> Parser b -> Parser c -> Parser d -> Parser e
-and4' f p1 p2 p3 p4 = \input -> 
-  case p1 input of
-    Right (v1, r1) -> 
-      case p2 r1 of
-        Right (v2, r2) -> 
-          case p3 r2 of
-            Right (v3, r3) ->
-              case p4 r3 of
-                Right (v4, r4) -> Right (f v1 v2 v3 v4, r4)
-                Left e4 -> Left e4
-            Left e3 -> Left e3
-        Left e2 -> Left e2
-    Left e1 -> Left e1
-
 and3' :: (a -> b -> c -> d) -> Parser a -> Parser b -> Parser c -> Parser d
 and3' d a b c = \input ->
   case a input of
