@@ -1,4 +1,7 @@
 View
+AddIngredients (Water)
+AddIngredients (Water Hops)
+View
 BrewBeer (PaleAle Lager 1% (Hops Water Malt))
 AddBags ((((Hops Hops) ((Yeast Hops Malt))) (Hops Water)))
 View

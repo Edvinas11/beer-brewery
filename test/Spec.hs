@@ -42,5 +42,5 @@ unitTests = testGroup "Lib2 tests"
 
     testCase "BrewBeer command parsing with simple beer" $
       Lib2.parseQuery "BrewBeer (PaleAle Lager 5% (Malt Hops Yeast))"
-        @?= Right (Lib2.BrewBeer (Lib2.Beer Lib2.PaleAle Lib2.Lager (Lib2.AlcoholContent 5 '%') [Lib2.Malt, Lib2.Hops, Lib2.Yeast])),
+        @?= Right (Lib2.BrewBeer (Lib2.Beer Lib2.PaleAle Lib2.Lager (Lib2.AlcoholContent 5 '%') [Lib2.Malt, Lib2.Hops, Lib2.Yeast]))
   ]
