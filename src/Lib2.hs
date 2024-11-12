@@ -29,10 +29,10 @@ emptyState = State {inventory = [], ingredientsStock = []}
 
 -- | Parses user's input.
 parseQuery :: String -> Either String Query
-parseQuery input = case parse parseCommand input of
-  Right (q, "") -> Right q
-  Right (q, leftover) -> Left $ "Unexpected input after command: " ++ leftover
-  Left err -> Left err
+parseQuery input = 
+  case parse parseCommand input of
+    Right (q, "") -> Right q
+    Left err -> Left err
 
 -- | Updates a state according to a query.
 stateTransition :: State -> Query -> Either String (Maybe String, State)
