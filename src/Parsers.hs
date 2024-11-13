@@ -38,7 +38,7 @@ module Parsers
     char,
     parseInt,
     parseLiteral,
-    parseCommand,
+    parseTask,
     parseAddIngredients,
     parseAddBags,
     parseView,
@@ -132,8 +132,8 @@ instance Monad Parser where
     Left e -> Left e
     Right (a, r) -> parse (f a) r
 
-parseCommand :: Parser Query
-parseCommand = parseAddIngredients <|> parseAddBags <|> parseView <|> parseBrewBeer
+parseTask :: Parser Query
+parseTask = parseAddIngredients <|> parseAddBags <|> parseView <|> parseBrewBeer
 
 -- <name> ::= "PaleAle" | "Guinness"
 parseBeerName :: Parser BeerName

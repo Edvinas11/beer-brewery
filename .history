@@ -1,3 +1,34 @@
+load
+save
+View
+AddIngredients(Water Hops)
+View
+View
+View();
+View()
+View
+BrewBeer(PaleAle Ale 5% (Water));
+AddIngredients(Water Hops);
+:paste
+load
+View
+save
+View
+view
+BrewBeer(PaleAle Ale 5% (Water))
+AddIngredients(Water Hops)
+:paste
+View
+View()
+AddIngredients(Water)
+END
+AddIngredients(Water)
+AddIngredients(Water Hops)
+:paste
+AddIngredients(Water)
+Save
+save
+addIngredients(Water)
 View
 BrewBeer(PaleAle Ale 5% (Water))
 View

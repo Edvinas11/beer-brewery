@@ -21,6 +21,7 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
+- directory
 
 ghc-options:
 - -Wall
@@ -41,6 +42,7 @@ library:
   - async
   - QuickCheck
   - transformers
+  - directory
 
 executables:
   fp2024-one:
@@ -53,6 +55,7 @@ executables:
     dependencies:
     - fp2024
     - repline
+    - directory
   fp2024-two:
     main:                Main.hs
     source-dirs:         app2
@@ -64,6 +67,7 @@ executables:
     - fp2024
     - repline
     - mtl
+    - directory
   fp2024-three:
     main:                Main.hs
     source-dirs:         app3

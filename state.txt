@@ -1,0 +1,3 @@
+BEGIN
+AddIngredient([Water,Hops]);
+END

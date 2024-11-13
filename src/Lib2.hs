@@ -7,6 +7,7 @@ module Lib2
     parseQuery,
     State(..),
     emptyState,
+    parseTask,
     stateTransition,
     ) where
 
@@ -30,7 +31,7 @@ emptyState = State {inventory = [], ingredientsStock = []}
 -- | Parses user's input.
 parseQuery :: String -> Either String Query
 parseQuery input = 
-  case parse parseCommand input of
+  case parse parseTask input of
     Right (q, "") -> Right q
     Left err -> Left err
 
