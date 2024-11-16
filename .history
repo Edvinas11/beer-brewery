@@ -1,5 +1,88 @@
 load
 save
+BrewBeer(PaleAle Ale 5% (Water))
+load
+save
+AddIngredients(Water Water)
+save
+View
+AddIngredients(Water Hops)
+AddIngredients(Water Water)
+AddIngredient(Water Water);
+AddIngredient(Water Water)
+View
+AddIngredients(Water Hops)
+AddIngredients (Water Hops)
+AddIngredients(Water Hops);
+AddIngredients(Water Hops)
+load
+save
+BrewBeer(PaleAle Ale 1% (Water))
+View
+AddIngredients(Water Hops)
+load
+load
+load
+load
+load
+load
+load
+load
+load
+load
+load
+load
+load
+parse
+load
+load
+save
+View
+END
+BrewBeer(PaleAle Ale 5% (Water));
+AddIngredients(Water Hops);
+BEGIN
+:paste
+load
+load
+save
+View
+END
+BrewBeer(PaleAle Ale 5% (Water));
+AddIngredients(Water Hops);
+BEGIN
+:paste
+load
+load
+load
+load
+save
+View
+view
+END
+BrewBeer(PaleAle Ale 5% (Water));
+AddIngredients(Water Hops);
+BEGIN
+:paste
+load
+load
+save
+View
+View()
+END
+AddIngredients(Hops);
+AddIngredients(Water);
+BEGIN
+:paste
+AddIngredients(Water);
+AddIngredients(Water);
+:paste
+AddIngredients(Water);
+AddIngredients(Water)
+:paste
+AddIngredients(Water)
+load
+save
 View
 AddIngredients(Water Hops)
 View
@@ -15,82 +98,3 @@ View
 save
 View
 view
-BrewBeer(PaleAle Ale 5% (Water))
-AddIngredients(Water Hops)
-:paste
-View
-View()
-AddIngredients(Water)
-END
-AddIngredients(Water)
-AddIngredients(Water Hops)
-:paste
-AddIngredients(Water)
-Save
-save
-addIngredients(Water)
-View
-BrewBeer(PaleAle Ale 5% (Water))
-View
-AddIngredients(Water Hops)
-AddIngredients (Water Hops)
-parseQuery ""
-parseQuery ""
-parseQuery
-AddIngredients (Water)
-View
-AddIngredients (Water Hops)
-parseQuery
-AddIngredients
-parseQuery
-parse parseQuery ""
-parseQuery
-AddIngredients (Water)
-View
-AddIngredients (Water)
-AddIngredients (Water Hops)
-View
-BrewBeer (PaleAle Lager 1% (Hops Water Malt))
-AddBags ((((Hops Hops) ((Yeast Hops Malt))) (Hops Water)))
-View
-BrewBeer (Guinness Stout 9% (Hops))
-BrewBeer (PaleAle Ale 5% (Water))
-View
-AddIngredients (Water Hops)
-View
-BrewBeer (PaleAle Ale 5% (Water))
-AddBags ((Water))
-BrewBeer (PaleAle Ale 5% (Water))
-View
-BrewBeer PaleAle Ale 1% (Hops)
-View
-AddIngredients (Water Hops)
-View
-BrewBeer PaleAle Ale 5% (Water)
-AddIngredients (Water Hops)
-View
-AddBags ((((Hops Hops) ((Yeast Hops Malt))) (Hops Water)))
-View
-AddIngredients (Water Hops)
-view()
-AddIngredients (Water Hops)
-View()
-View
-viewState
-parseQuery
-parseQuery "brewBeer (Lager (Malt Hops Yeast Water) (Mash 1 hour Boil 1 hour Ferment 2 weeks Condition 1 month))"
-brewBeer (Lager (Malt Hops Yeast Water) (Mash 1 hour Boil 1 hour Ferment 2 weeks Condition 1 month))
-brewBeer 
-let j
-testCommand 
-testCommand 
-testCommand
-testCommand 
-testCommand 
-testCommand 
-testCommand
-brewBeer (Lager (Malt Hops Yeast Water) (Mash 1 hour Boil 1 hour Ferment 2 weeks Condition 1 month))
-brewBeer (Lager (Malt Hops Yeast Water) (Mash 1 hour Boil 1 hour Ferment 2 weeks Condition 1 month))
-brewBeer 
-brewBeer
-brewBeer (Lager (Malt Hops Yeast Water) (Mash 1 hour Boil 1 hour Ferment 2 weeks Condition 1 month))

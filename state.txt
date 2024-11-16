@@ -1,3 +1,4 @@
 BEGIN
-AddIngredient([Water,Hops]);
+BrewBeer(Beer {beerName = PaleAle, beerType = Ale, alcoholContent = AlcoholContent 5 '%', ingredients = [Water]});
+AddIngredient([Water]);
 END

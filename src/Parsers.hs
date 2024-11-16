@@ -38,11 +38,13 @@ module Parsers
     char,
     parseInt,
     parseLiteral,
+    parseTaskList,
     parseTask,
     parseAddIngredients,
     parseAddBags,
     parseView,
-    parseBrewBeer
+    parseBrewBeer,
+    skipSpaces'
  )
 where
 
@@ -54,6 +56,7 @@ data Query = AddIngredients [Ingredient]
            | AddBags Bags
            | BrewBeer Beer
            | View
+           | Sequence [Query] -- Sequence of queries
   deriving (Show, Eq)
 
 data Ingredient = Malt | Hops | Yeast | Water
@@ -131,6 +134,14 @@ instance Monad Parser where
   (>>=) pa f = P $ \str -> case parse pa str of
     Left e -> Left e
     Right (a, r) -> parse (f a) r
+
+parseTaskList :: Parser [Query]
+parseTaskList = do
+  firstQuery <- parseTask
+  rest <- optional (char ';' >> parseTaskList)
+  return $ case rest of
+    Just otherQueries -> firstQuery : otherQueries
+    Nothing -> [firstQuery]
 
 parseTask :: Parser Query
 parseTask = parseAddIngredients <|> parseAddBags <|> parseView <|> parseBrewBeer

@@ -43,7 +43,7 @@ storageOpLoop opChan = forever $ do
         then do
           s' <- readFile "state.txt"
           writeChan chan $ Just s'
-      else writeChan chan Nothing
+        else writeChan chan Nothing
 
 data Statements = Batch [Lib2.Query] |
                Single Lib2.Query
@@ -85,9 +85,11 @@ parseStatements = parse statements
 marshallState :: Lib2.State -> Statements
 marshallState state = Batch queries
   where
-    inventoryQueries = map Lib2.BrewBeer (Lib2.inventory state)
-    stockQueries = map Lib2.AddIngredients [Lib2.ingredientsStock state]
-    queries = inventoryQueries ++ stockQueries
+    brewBeerQueries = map (\beer -> BrewBeer beer) (Lib2.inventory state)
+    addIngredientsQueries = map (\ingredient -> AddIngredients [ingredient]) (Lib2.ingredientsStock state)
+    -- inventoryQueries = map Lib2.BrewBeer (Lib2.inventory state)
+    -- stockQueries = map Lib2.AddIngredients [Lib2.ingredientsStock state]
+    queries = brewBeerQueries ++ addIngredientsQueries
 
 renderQuery :: Lib2.Query -> String
 renderQuery (Lib2.AddIngredients ingredients) =
@@ -95,9 +97,11 @@ renderQuery (Lib2.AddIngredients ingredients) =
 renderQuery (Lib2.AddBags bags) = 
   "AddBags(" ++ show bags ++ ")"
 renderQuery (Lib2.View) = 
-  "View()"
+  "View"
 renderQuery (Lib2.BrewBeer beer) = 
   "BrewBeer(" ++ show beer ++ ")"
+renderQuery (Lib2.Sequence queries) =
+  intercalate "\n" (map renderQuery queries)
 
 -- | Renders Statements into a String which
 -- can be parsed back into Statements by parseStatements
@@ -170,13 +174,17 @@ statements =
   ( do
       _ <- parseLiteral "BEGIN"
       _ <- parseLiteral "\n"
-      q <- many (do
-                    q <- Lib2.parseTask
-                    _ <- parseLiteral ";"
-                    _ <- parseLiteral "\n"
-                    return q)
+      q <-
+        many
+          ( do
+              q <- Lib2.parseTask
+              _ <- parseLiteral ";"
+              _ <- parseLiteral "\n"
+              return q
+          )
       _ <- parseLiteral "END"
       _ <- parseLiteral "\n"
       return $ Batch q
   )
     <|> (Single <$> Lib2.parseTask)
+

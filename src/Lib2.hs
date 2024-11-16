@@ -31,9 +31,13 @@ emptyState = State {inventory = [], ingredientsStock = []}
 -- | Parses user's input.
 parseQuery :: String -> Either String Query
 parseQuery input = 
-  case parse parseTask input of
-    Right (q, "") -> Right q
-    Left err -> Left err
+  case parse parseTaskList input of
+    Left e -> Left e
+    Right (qs, r) -> if null r
+      then case qs of
+        [q] -> Right q
+        _ -> Right (Sequence qs)
+      else Left ("Unrecognized characters: " ++ r)
 
 -- | Updates a state according to a query.
 stateTransition :: State -> Query -> Either String (Maybe String, State)
@@ -61,6 +65,23 @@ stateTransition st query = case query of
       Right updatedStock ->
         let newState = st { inventory = beer : inventory st, ingredientsStock = updatedStock }
          in Right (Just $ "Brewed beer: " ++ show (beerName beer), newState)
+  Sequence queryList ->
+    foldl processQuery (Right (Just "", st)) queryList
+    where
+      processQuery :: Either String (Maybe String, State) -> Query -> Either String (Maybe String, State)
+      processQuery (Left err) _ = Left err
+      processQuery (Right (accMsg, currentState)) nextQuery =
+        case stateTransition currentState nextQuery of
+          Left err -> Left err
+          Right (Just result, newState) ->
+            Right (combineMessages accMsg (Just result), newState)
+          Right (Nothing, newState) -> Right (accMsg, newState)
+
+combineMessages :: Maybe String -> Maybe String -> Maybe String
+combineMessages Nothing Nothing = Nothing
+combineMessages (Just msg) Nothing = Just msg
+combineMessages Nothing (Just msg) = Just msg
+combineMessages (Just msg1) (Just msg2) = Just (msg1 ++ "\n" ++ msg2)
 
 hasEnoughIngredients :: [Ingredient] -> [Ingredient] -> Either String [Ingredient]
 hasEnoughIngredients [] stock = Right stock
