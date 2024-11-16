@@ -9,6 +9,9 @@ module Lib2
     emptyState,
     parseTask,
     stateTransition,
+    combineMessages,
+    Beer(..),
+    AlcoholContent(..)
     ) where
 
 import qualified Data.Char as C
@@ -62,8 +65,8 @@ stateTransition st query = case query of
         currentStock = ingredientsStock st
     in case hasEnoughIngredients beerIngredients currentStock of
       Left err -> Left err -- not enough ingredients
-      Right updatedStock ->
-        let newState = st { inventory = beer : inventory st, ingredientsStock = updatedStock }
+      Right _ ->
+        let newState = st { inventory = beer : inventory st }
          in Right (Just $ "Brewed beer: " ++ show (beerName beer), newState)
   Sequence queryList ->
     foldl processQuery (Right (Just "", st)) queryList

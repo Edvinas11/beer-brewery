@@ -15,7 +15,7 @@ import Control.Applicative (Alternative (many), (<|>))
 import Control.Concurrent (Chan, newChan, readChan, writeChan)
 import Control.Concurrent.STM (STM, TVar, atomically, readTVar, readTVarIO, writeTVar)
 import Control.Monad (forever)
-import Data.List (intercalate)
+import Data.List (intercalate, partition)
 import Data.Maybe (fromJust, isNothing)
 import qualified Lib2
 import Parsers
@@ -85,23 +85,28 @@ parseStatements = parse statements
 marshallState :: Lib2.State -> Statements
 marshallState state = Batch queries
   where
-    brewBeerQueries = map (\beer -> BrewBeer beer) (Lib2.inventory state)
     addIngredientsQueries = map (\ingredient -> AddIngredients [ingredient]) (Lib2.ingredientsStock state)
+    brewBeerQueries = map (\beer -> BrewBeer beer) (Lib2.inventory state)
     -- inventoryQueries = map Lib2.BrewBeer (Lib2.inventory state)
     -- stockQueries = map Lib2.AddIngredients [Lib2.ingredientsStock state]
-    queries = brewBeerQueries ++ addIngredientsQueries
+    queries = addIngredientsQueries ++ brewBeerQueries
 
 renderQuery :: Lib2.Query -> String
 renderQuery (Lib2.AddIngredients ingredients) =
-  "AddIngredient(" ++ show ingredients ++ ")"
+  "AddIngredients(" ++ intercalate " " (map show ingredients) ++ ")"
 renderQuery (Lib2.AddBags bags) = 
   "AddBags(" ++ show bags ++ ")"
 renderQuery (Lib2.View) = 
   "View"
 renderQuery (Lib2.BrewBeer beer) = 
-  "BrewBeer(" ++ show beer ++ ")"
+  "BrewBeer(" ++ renderBeer beer ++ ")"
 renderQuery (Lib2.Sequence queries) =
   intercalate "\n" (map renderQuery queries)
+
+renderBeer :: Lib2.Beer -> String
+renderBeer (Lib2.Beer name bType (Lib2.AlcoholContent percent _) ingr) =
+  show name ++ " " ++ show bType ++ " " ++ show percent ++ "%" ++ " (" ++ unwords (map show ingr) ++ ")"
+
 
 -- | Renders Statements into a String which
 -- can be parsed back into Statements by parseStatements
@@ -143,15 +148,21 @@ stateTransition s LoadCommand ioChan = do
 stateTransition s (StatementCommand sts) _ = atomically $ atomicStatements s sts
 
 transitionThroughList :: Lib2.State -> [Lib2.Query] -> Either String (Maybe String, Lib2.State)
-transitionThroughList _ [] = Left "Empty query list"
-transitionThroughList s (q : qs) = case Lib2.stateTransition s q of
-  Left e -> Left e
-  Right (msg, ns) ->
-    if null qs
-      then Right (msg, ns)
-      else case transitionThroughList ns qs of
-        Left e -> Left e
-        Right (msg', ns') -> Right ((\x y -> x ++ "\n" ++ y) <$> msg <*> msg', ns')
+transitionThroughList state queries =
+  let (addIngredients, otherQueries) = partition isAddIngredients queries
+      orderedQueries = addIngredients ++ otherQueries
+  in foldl processQuery (Right (Nothing, state)) orderedQueries
+  where
+    processQuery :: Either String (Maybe String, Lib2.State) -> Lib2.Query -> Either String (Maybe String, Lib2.State)
+    processQuery (Left err) _ = Left err
+    processQuery (Right (accMsg, currentState)) query =
+      case Lib2.stateTransition currentState query of
+        Left err -> Left err
+        Right (msg, newState) -> Right (Lib2.combineMessages accMsg msg, newState)
+
+    isAddIngredients :: Lib2.Query -> Bool
+    isAddIngredients (Lib2.AddIngredients _) = True
+    isAddIngredients _ = False
 
 atomicStatements :: TVar Lib2.State -> Statements -> STM (Either String (Maybe String))
 atomicStatements s (Batch qs) = do

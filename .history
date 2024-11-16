@@ -1,3 +1,70 @@
+View
+load
+View
+save
+BrewBeer(PaleAle Ale 5% (Water))
+AddIngredients(Water Hops)
+load
+save
+BrewBeer(PaleAle Ale 5% (Water))
+AddIngredients(Water Hops)
+View
+load
+save
+AddIngredients(Water Hops Water)
+save
+BrewBeer(PaleAle Ale 5% (Water))
+AddIngredients(Water Hops Water)
+save
+BrewBeer(PaleAle Ale 5% (Water))
+AddIngredients(Water Hops)
+save
+AddIngredients(Water Hops)
+save
+save
+BrewBeer(PaleAle Ale 5% (Water))
+AddIngredients(Water Hops)
+save
+BrewBeer(PaleAle Ale 5% (Water))
+AddIngredients(Water Hops)
+load
+save
+AddIngredients(Water Hops Water)
+save
+BrewBeer(PaleAle Ale 5% (Water))
+AddIngredients(Water Hops)
+save
+save
+BrewBeer(PaleAle Ale 5% (Water))
+AddIngredients(Water Hops)
+load
+save
+BrewBeer(PaleAle Ale 5% (Water))
+AddIngredients(Water Hops)
+load
+save
+BrewBeer(PaleAle Ale 5% (Water))
+AddIngredients(Water Hops)
+load
+load
+save
+BrewBeer(PaleAle Ale 5% (Water))
+AddIngredients(Water Hops)
+load
+save
+BrewBeer(PaleAle Ale 5% (Water))
+AddIngredients(Water Hops)
+load
+load
+save
+View
+view
+BrewBeer(PaleAle Ale 6% (Water))
+load
+save
+AddIngredients(Water Water)
+load
+load
 load
 save
 BrewBeer(PaleAle Ale 5% (Water))
@@ -31,70 +98,3 @@ load
 load
 load
 load
-load
-load
-parse
-load
-load
-save
-View
-END
-BrewBeer(PaleAle Ale 5% (Water));
-AddIngredients(Water Hops);
-BEGIN
-:paste
-load
-load
-save
-View
-END
-BrewBeer(PaleAle Ale 5% (Water));
-AddIngredients(Water Hops);
-BEGIN
-:paste
-load
-load
-load
-load
-save
-View
-view
-END
-BrewBeer(PaleAle Ale 5% (Water));
-AddIngredients(Water Hops);
-BEGIN
-:paste
-load
-load
-save
-View
-View()
-END
-AddIngredients(Hops);
-AddIngredients(Water);
-BEGIN
-:paste
-AddIngredients(Water);
-AddIngredients(Water);
-:paste
-AddIngredients(Water);
-AddIngredients(Water)
-:paste
-AddIngredients(Water)
-load
-save
-View
-AddIngredients(Water Hops)
-View
-View
-View();
-View()
-View
-BrewBeer(PaleAle Ale 5% (Water));
-AddIngredients(Water Hops);
-:paste
-load
-View
-save
-View
-view
