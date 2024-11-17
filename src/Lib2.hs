@@ -11,7 +11,23 @@ module Lib2
     stateTransition,
     combineMessages,
     Beer(..),
-    AlcoholContent(..)
+    BeerType(..),
+    AlcoholContent(..),
+    BeerName(..),
+    Bag(..),
+    Ingredient(..),
+    parseBeerName,
+    parseBeerType,
+    parseIngredient,
+    parseAlcoholContent,
+    parseIngredients,
+    parseBeer,
+    parsePeriod,
+    parseTime,
+    parseProcess,
+    parseRecipe,
+    parseBag,
+    parseBags
     ) where
 
 import qualified Data.Char as C

@@ -7,6 +7,7 @@ module Lib3
     parseStatements,
     marshallState,
     renderStatements,
+    renderQuery,
     Statements (..),
     Command (..)
     ) where
