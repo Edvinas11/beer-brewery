@@ -1,5 +1,9 @@
 BEGIN
-AddIngredients(Water);
 AddIngredients(Hops);
-BrewBeer(PaleAle Ale 5% (Water));
+AddIngredients(Hops);
+AddIngredients(Yeast);
+AddIngredients(Hops);
+AddIngredients(Malt);
+AddIngredients(Hops);
+AddIngredients(Water);
 END

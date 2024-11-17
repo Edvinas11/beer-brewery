@@ -87,8 +87,6 @@ marshallState state = Batch queries
   where
     addIngredientsQueries = map (\ingredient -> AddIngredients [ingredient]) (Lib2.ingredientsStock state)
     brewBeerQueries = map (\beer -> BrewBeer beer) (Lib2.inventory state)
-    -- inventoryQueries = map Lib2.BrewBeer (Lib2.inventory state)
-    -- stockQueries = map Lib2.AddIngredients [Lib2.ingredientsStock state]
     queries = addIngredientsQueries ++ brewBeerQueries
 
 renderQuery :: Lib2.Query -> String
@@ -100,13 +98,10 @@ renderQuery (Lib2.View) =
   "View"
 renderQuery (Lib2.BrewBeer beer) = 
   "BrewBeer(" ++ renderBeer beer ++ ")"
-renderQuery (Lib2.Sequence queries) =
-  intercalate "\n" (map renderQuery queries)
 
 renderBeer :: Lib2.Beer -> String
 renderBeer (Lib2.Beer name bType (Lib2.AlcoholContent percent _) ingr) =
   show name ++ " " ++ show bType ++ " " ++ show percent ++ "%" ++ " (" ++ unwords (map show ingr) ++ ")"
-
 
 -- | Renders Statements into a String which
 -- can be parsed back into Statements by parseStatements

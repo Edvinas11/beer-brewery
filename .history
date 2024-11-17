@@ -1,3 +1,28 @@
+load
+save
+View
+AddBags((((Hops Hops) ((Yeast Hops Malt))) (Hops Water)))
+View
+load
+save
+View
+END
+BrewBeer(PaleAle Ale 5% (Water));
+AddIngredients(Water Hops);
+BEGIN
+:paste
+BrewBeer(PaleAle Ale 5% (Water))
+AddIngredients(Water Hops)
+:paste
+View
+load
+save
+View
+END
+BrewBeer(PaleAle Ale 5% (Water));
+AddIngredients(Water Hops);
+BEGIN
+:paste
 View
 load
 View
@@ -73,28 +98,3 @@ save
 AddIngredients(Water Water)
 save
 View
-AddIngredients(Water Hops)
-AddIngredients(Water Water)
-AddIngredient(Water Water);
-AddIngredient(Water Water)
-View
-AddIngredients(Water Hops)
-AddIngredients (Water Hops)
-AddIngredients(Water Hops);
-AddIngredients(Water Hops)
-load
-save
-BrewBeer(PaleAle Ale 1% (Water))
-View
-AddIngredients(Water Hops)
-load
-load
-load
-load
-load
-load
-load
-load
-load
-load
-load

@@ -68,17 +68,6 @@ stateTransition st query = case query of
       Right _ ->
         let newState = st { inventory = beer : inventory st }
          in Right (Just $ "Brewed beer: " ++ show (beerName beer), newState)
-  Sequence queryList ->
-    foldl processQuery (Right (Just "", st)) queryList
-    where
-      processQuery :: Either String (Maybe String, State) -> Query -> Either String (Maybe String, State)
-      processQuery (Left err) _ = Left err
-      processQuery (Right (accMsg, currentState)) nextQuery =
-        case stateTransition currentState nextQuery of
-          Left err -> Left err
-          Right (Just result, newState) ->
-            Right (combineMessages accMsg (Just result), newState)
-          Right (Nothing, newState) -> Right (accMsg, newState)
 
 combineMessages :: Maybe String -> Maybe String -> Maybe String
 combineMessages Nothing Nothing = Nothing
