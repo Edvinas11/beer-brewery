@@ -1,0 +1,67 @@
+Run the program with - 'stack run fp2024-three --allow-different-user'
+
+--- commands one-by-one
+Welcome! Press [TAB] for auto completion, type ':paste' for multiline input
+>>> AddIngredients(Water Hops)
+Ingredients added: [Water,Hops]
+>>> BrewBeer(PaleAle Ale 5% (Water))
+Brewed beer: PaleAle
+>>> View
+Inventory:
+Beer: PaleAle, Type: Ale, Alcohol: AlcoholContent 5 '%', Ingredients: [Water]
+
+Ingredients:
+Water
+Hops
+
+--- batch of commands and save them
+Welcome! Press [TAB] for auto completion, type ':paste' for multiline input
+>>> :paste
+-- Entering multi-line mode. Press <Ctrl-D> to finish.
+| BEGIN
+| AddBags((((Hops Hops) ((Yeast Hops Malt))) (Hops Water)));
+| BrewBeer(PaleAle Lager 1% (Hops Water Malt));
+| View;
+| END
+| 
+Ingredients added from bags: [Hops,Hops,Yeast,Hops,Malt,Hops,Water]
+Brewed beer: PaleAle
+Inventory:
+Beer: PaleAle, Type: Lager, Alcohol: AlcoholContent 1 '%', Ingredients: [Hops,Water,Malt]
+
+Ingredients:
+Hops
+Hops
+Yeast
+Hops
+Malt
+Hops
+Water
+
+>>> save
+State saved successfully
+
+--- loading state from file
+Welcome! Press [TAB] for auto completion, type ':paste' for multiline input
+>>> load
+Ingredients added: [Hops]
+Ingredients added: [Hops]
+Ingredients added: [Yeast]
+Ingredients added: [Hops]
+Ingredients added: [Malt]
+Ingredients added: [Hops]
+Ingredients added: [Water]
+Brewed beer: PaleAle
+>>> View
+Inventory:
+Beer: PaleAle, Type: Lager, Alcohol: AlcoholContent 1 '%', Ingredients: [Hops,Water,Malt]
+
+Ingredients:
+Water
+Hops
+Malt
+Hops
+Yeast
+Hops
+Hops
+

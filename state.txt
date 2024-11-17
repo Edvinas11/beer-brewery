@@ -6,4 +6,5 @@ AddIngredients(Hops);
 AddIngredients(Malt);
 AddIngredients(Hops);
 AddIngredients(Water);
+BrewBeer(PaleAle Lager 1% (Hops Water Malt));
 END

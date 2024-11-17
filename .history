@@ -1,3 +1,15 @@
+View
+load
+save
+END
+View;
+BrewBeer(PaleAle Lager 1% (Hops Water Malt));
+AddBags((((Hops Hops) ((Yeast Hops Malt))) (Hops Water)));
+BEGIN
+:paste
+View
+BrewBeer(PaleAle Ale 5% (Water))
+AddIngredients(Water Hops)
 load
 save
 View
@@ -86,15 +98,3 @@ View
 view
 BrewBeer(PaleAle Ale 6% (Water))
 load
-save
-AddIngredients(Water Water)
-load
-load
-load
-save
-BrewBeer(PaleAle Ale 5% (Water))
-load
-save
-AddIngredients(Water Water)
-save
-View
