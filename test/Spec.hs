@@ -83,8 +83,7 @@ instance Arbitrary Lib2.Ingredient where
 
 propertyTests :: TestTree
 propertyTests = testGroup "Property tests"
-  [ QC.testProperty "sort is idempotent" $
-      \list -> sort (sort (list :: [Int])) == sort list,
+  [ 
     QC.testProperty "stateTransition preserves stock when brewing beer" $
       \ingredients ->
         let initialState = Lib2.State { Lib2.inventory = [], Lib2.ingredientsStock = ingredients }
